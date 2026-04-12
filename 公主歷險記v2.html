@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>公主歷險記 v4.1 - 最終白金版</title>
+<style>
+    /* =========================================
+       🎨 1. 全域與 UI 樣式設定
+       ========================================= */
+    body { margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; background-color: #1a1a1a; display: flex; justify-content: center; align-items: center; height: 100vh; user-select: none; }
+    #game-container { width: 800px; height: 600px; background-color: #000; border: 8px solid #bdc3c7; border-radius: 4px; display: flex; flex-direction: column; box-shadow: 0 0 30px rgba(0,0,0,0.8); position: relative; overflow: hidden; }
+
+    .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 40px; box-sizing: border-box; color: white; text-align: center; background-color: #2c3e50; z-index: 50; }
+    .hidden { display: none !important; }
+
+    .pixel-btn { background-color: #f1c40f; border: 4px solid #d35400; padding: 12px 24px; font-size: 1.5rem; font-family: inherit; font-weight: bold; cursor: pointer; color: #2c3e50; transition: transform 0.1s; box-shadow: 4px 4px 0px #000; border-radius: 4px; }
+    .pixel-btn:hover:not(:disabled) { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
+    .pixel-btn:disabled { background-color: #95a5a6; border-color: #7f8c8d; cursor: not-allowed; box-shadow: none; transform: translate(2px, 2px); }
+
+    /* 角色選擇 */
+    #char-select-screen { background-color: #2980b9; border: 8px solid #34495e; }
+    #char-title { font-size: 2.5rem; color: #f1c40f; margin-bottom: 20px; text-shadow: 3px 3px #000; }
+    #name-input { background-color: #ecf0f1; border: 4px solid #34495e; padding: 12px; font-size: 1.5rem; font-family: inherit; margin-bottom: 40px; width: 300px; text-align: center; font-weight: bold; color: #2c3e50; outline: none; }
+    .char-options { display: flex; gap: 40px; margin-bottom: 40px; }
+    .char-card { border: 6px solid transparent; padding: 20px; cursor: pointer; transition: all 0.2s; background-color: rgba(0,0,0,0.4); border-radius: 8px; }
+    .char-card.selected { border-color: #f1c40f; background-color: rgba(241, 196, 15, 0.3); transform: scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+    .preview-canvas { width: 96px; height: 128px; image-rendering: pixelated; display: block; }
+
+    /* 故事前言 */
+    #story-screen { background-color: #1a1a1a; border: 8px solid #8e44ad; justify-content: center; padding: 60px 40px; }
+    #story-box { background-color: rgba(0,0,0,0.8); border: 4px solid #ecf0f1; padding: 40px; border-radius: 8px; width: 85%; min-height: 220px; display: flex; align-items: flex-start; justify-content: left; box-shadow: inset 0 0 20px rgba(255,255,255,0.1); z-index: 10; }
+    #story-text { font-size: 1.6rem; line-height: 1.8; text-align: left; text-shadow: 2px 2px #000; color: #ecf0f1; width: 100%; }
+    .highlight { color: #f1c40f; font-weight: bold; }
+    .action-text { color: #e74c3c; font-style: italic; font-size: 1.2rem; }
+    .story-controls { position: relative; display: flex; width: 85%; justify-content: center; align-items: center; margin-top: 30px; z-index: 10; }
+    #skip-story { position: absolute; right: 0; bottom: 10px; font-size: 1.2rem; color: #95a5a6; cursor: pointer; text-decoration: underline; }
+    
+    #story-anim-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: hidden; }
+    #story-backpack { position: absolute; bottom: -100px; left: 50%; transform: translateX(-50%); width: 180px; height: 80px; background-color: #8e44ad; border: 6px solid #ecf0f1; border-radius: 10px 10px 0 0; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; font-weight: bold; transition: bottom 0.5s ease; color: white; text-shadow: 2px 2px #000; box-shadow: 0 -5px 15px rgba(0,0,0,0.5); }
+    #story-backpack.show { bottom: 0; }
+    .falling-item { position: absolute; font-size: 4rem; top: 20%; opacity: 0; transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); filter: drop-shadow(2px 4px 6px black); }
+
+    /* 遊戲主畫面佈局 */
+    #main-game-screen { padding: 0; justify-content: space-between; background-color: transparent; }
+    #header { background-color: #34495e; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 6px solid #2c3e50; height: 50px; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; }
+    #progress-container { position: relative; width: 400px; display: flex; justify-content: space-between; align-items: center; }
+    #progress-line { position: absolute; top: 50%; left: 0; right: 0; height: 6px; background-color: #f1c40f; z-index: 1; transform: translateY(-50%); border: 2px solid #000; }
+    .node { width: 32px; height: 32px; background-color: #7f8c8d; border: 4px solid #f1c40f; border-radius: 50%; z-index: 2; display: flex; justify-content: center; align-items: center; font-size: 14px; font-weight: bold; color: white; text-shadow: 1px 1px #000; box-shadow: 2px 2px 0 #000; transition: background-color 0.3s; }
+    .node.completed { background-color: #2ecc71; }
+    #player-progress-head { position: absolute; width: 24px; height: 24px; border: 4px solid #fff; background-color: #e74c3c; z-index: 5; transform: translate(-50%, -50%); transition: left 0.5s ease; font-size: 14px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; border-radius: 50%; box-shadow: 2px 2px 0 #000; left: 0; }
+    
+    /* 點擊商店按鈕 */
+    #coin-info { font-size: 1.8rem; font-weight: bold; color: #f1c40f; text-shadow: 3px 3px #000; cursor: pointer; transition: transform 0.1s; pointer-events: auto; }
+    #coin-info:hover { transform: scale(1.1); }
+
+    #game-area { flex: 1; position: relative; overflow: hidden; width: 100%; }
+    #gameCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; image-rendering: pixelated; z-index: 1; }
+
+    #ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 15px; z-index: 10; }
+    #question-board { background-color: rgba(236, 240, 241, 0.95); border: 8px solid #2980b9; border-radius: 8px; padding: 15px 30px; text-align: center; pointer-events: auto; box-shadow: 0 10px 0px rgba(0,0,0,0.3); transition: transform 0.2s; max-width: 85%; max-height: 95%; overflow-y: auto; box-sizing: border-box; }
+    
+    .options-container { display: flex; gap: 10px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+    .option-btn { background-color: #f1c40f; border: 6px solid #d35400; padding: 8px 16px; font-size: 1.5rem; font-family: inherit; font-weight: bold; cursor: pointer; color: #2c3e50; transition: transform 0.1s; pointer-events: auto; border-radius: 8px; box-shadow: 0 4px 0 #a04000; }
+    .option-btn:hover:not(:disabled) { transform: translateY(2px); box-shadow: 0 2px 0 #a04000; background-color: #f39c12; }
+    .option-btn:disabled { cursor: not-allowed; opacity: 0.8; }
+    
+    #message-area { margin-top: 20px; font-size: 1.5rem; color: white; background-color: #e74c3c; padding: 10px 20px; border: 6px solid #c0392b; display: none; font-weight: bold; text-shadow: 2px 2px #000; border-radius: 8px; animation: shake 0.4s; }
+    @keyframes shake { 0%{transform: translateX(0);} 25%{transform: translateX(-10px);} 50%{transform: translateX(10px);} 75%{transform: translateX(-10px);} 100%{transform: translateX(0);} }
+
+    #footer { background-color: #34495e; padding: 15px 20px; border-top: 6px solid #2c3e50; display: flex; justify-content: flex-start; align-items: center; z-index: 20; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; }
+    #backpack-btn { background-color: #8e44ad; color: white; border: 4px solid #000; padding: 10px 20px; font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0px #000; border-radius: 4px; pointer-events: auto; transition: transform 0.1s; }
+    #backpack-btn:hover { transform: translateY(2px); box-shadow: 2px 2px 0px #000; }
+
+    /* =========================================
+       🛍️ 商店與背包彈出視窗
+       ========================================= */
+    .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; justify-content: center; align-items: center; pointer-events: auto; }
+    .modal-box { background: #ecf0f1; border: 8px solid #34495e; border-radius: 8px; padding: 30px; width: 80%; max-width: 500px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; }
+    .close-btn { position: absolute; top: 10px; right: 15px; font-size: 2rem; color: #c0392b; cursor: pointer; font-weight: bold; }
+    .close-btn:hover { color: #e74c3c; }
+    .item-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 20px; }
+    .shop-item { background: #fff; border: 4px solid #bdc3c7; border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center; cursor: pointer; transition: 0.2s; }
+    .shop-item:hover { border-color: #f1c40f; transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .item-icon { font-size: 3.5rem; margin-bottom: 5px; }
+    .item-price { font-size: 1.2rem; font-weight: bold; color: #d35400; }
+    .bp-item { font-size: 3rem; background: #bdc3c7; border: 4px solid #7f8c8d; border-radius: 8px; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+    
+    <div id="char-select-screen" class="screen">
+        <div id="char-title">選擇你的冒險角色</div>
+        <input type="text" id="name-input" placeholder="輸入玩家名稱" maxlength="8">
+        <div class="char-options">
+            <div class="char-card selected" data-char="0"><canvas id="prev-cvs-0" class="preview-canvas" width="48" height="64"></canvas></div>
+            <div class="char-card" data-char="1"><canvas id="prev-cvs-1" class="preview-canvas" width="48" height="64"></canvas></div>
+            <div class="char-card" data-char="2"><canvas id="prev-cvs-2" class="preview-canvas" width="48" height="64"></canvas></div>
+        </div>
+        <button class="pixel-btn" id="confirm-char-btn">確認出發</button>
+    </div>
+
+    <div id="story-screen" class="screen hidden">
+        <div id="story-box"><div id="story-text"></div></div>
+        <div class="story-controls">
+            <button class="pixel-btn" id="story-next-btn">下一頁 ►</button>
+            <div id="skip-story">按 SKIP 略過故事</div>
+        </div>
+        <div id="story-anim-layer">
+            <div id="item-food" class="falling-item" style="left: 35%;">🍙</div>
+            <div id="item-phone" class="falling-item" style="right: 35%;">📱</div>
+            <div id="story-backpack">🎒 玩家背包</div>
+        </div>
+    </div>
+
+    <div id="main-game-screen" class="screen hidden">
+        <div id="header">
+            <div id="progress-container">
+                <div id="progress-line"></div>
+                <div class="node" id="node-0">1</div><div class="node" id="node-1">2</div><div class="node" id="node-2">3</div><div class="node" id="node-3">4</div><div class="node" id="node-4">🏁</div>
+                <div id="player-progress-head">P</div>
+            </div>
+            <div id="coin-info" onclick="openShop()">💰 <span id="coin-count">0</span></div>
+        </div>
+        
+        <div id="game-area">
+            <canvas id="gameCanvas" width="800" height="460"></canvas>
+            <div id="ui-layer">
+                <div id="question-board">讀取中...</div>
+                <div id="message-area">哎呀！再試一次！</div>
+            </div>
+        </div>
+        
+        <div id="footer">
+            <button id="backpack-btn" onclick="openBackpack()">🎒 我的背包 (0)</button>
+        </div>
+    </div>
+
+    <div id="shop-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="close-btn" onclick="closeShop()">✖</div>
+            <h2 style="color:#2980b9; margin-top:0;">🏪 森林商店</h2>
+            <p style="color:#7f8c8d; font-weight:bold;">你有 <span id="shop-coin-display" style="color:#f1c40f;">0</span> 金幣可以購物</p>
+            <div class="item-grid">
+                <div class="shop-item" onclick="buyItem('鮮花籃子💐', 30)">
+                    <div class="item-icon">💐</div><div style="font-weight:bold; color:#2c3e50;">鮮花籃子</div><div class="item-price">💰 30</div>
+                </div>
+                <div class="shop-item" onclick="buyItem('魔杖🪄', 50)">
+                    <div class="item-icon">🪄</div><div style="font-weight:bold; color:#2c3e50;">魔杖</div><div class="item-price">💰 50</div>
+                </div>
+                <div class="shop-item" onclick="buyItem('格子鬆餅🧇', 20)">
+                    <div class="item-icon">🧇</div><div style="font-weight:bold; color:#2c3e50;">格子鬆餅</div><div class="item-price">💰 20</div>
+                </div>
+                <div class="shop-item" onclick="buyItem('巧克力🍫', 20)">
+                    <div class="item-icon">🍫</div><div style="font-weight:bold; color:#2c3e50;">巧克力</div><div class="item-price">💰 20</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="backpack-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="close-btn" onclick="closeBackpack()">✖</div>
+            <h2 style="color:#8e44ad; margin-top:0;">🎒 我的背包</h2>
+            <div id="backpack-grid" style="display:flex; flex-wrap:wrap; gap:15px; justify-content:center; margin-top:20px; min-height: 100px;">
+                </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+/**
+ * 公主歷險記 - 最終白金版 v4.1 (Dustine)
+ * 特色：修復過關卡頓問題，並將卷軸字體改為純黑色以提高辨識度
+ */
+
+// =========================================
+// ⚙️ 1. 全域資料狀態
+// =========================================
+const GAME_STATE = { SELECT: 0, STORY: 1, LEVEL1: 2, LEVEL2: 3, LEVEL3: 4, LEVEL4: 5, LEVEL5: 6, ENDING: 7 };
+
+const state = {
+    gameState: GAME_STATE.SELECT, coins: 0,
+    playerName: '', selectedCharIndex: 0, storyPage: 0, 
+    backpack: [],
+    pet: null, 
+    
+    currentQuestions: [], currentQuestionIndex: 0, mistakesCurrentQuestion: 0, mistakeReviewPool: [],
+    scrollX: 0, targetScrollX: 0, playerFallAngle: 0, isFalling: false, isWalking: false, walkOffset: 0,
+    monsterDefeated: false, wolfDefeated: false,
+    
+    grandpaHealed: false, endingBedX: 0, confetti: []
+};
+
+const DOM = {
+    sel: document.getElementById('char-select-screen'), story: document.getElementById('story-screen'), game: document.getElementById('main-game-screen'),
+    cards: document.querySelectorAll('.char-card'), nextBtn: document.getElementById('story-next-btn'), bpBtn: document.getElementById('backpack-btn'),
+    msg: document.getElementById('message-area'), board: document.getElementById('question-board')
+};
+
+// =========================================
+// 🎵 2. 音效引擎
+// =========================================
+const AudioEngine = {
+    ctx: null,
+    init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
+    play(f, t, d, v=0.1) { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type=t; o.frequency.setValueAtTime(f, this.ctx.currentTime); g.gain.setValueAtTime(v, this.ctx.currentTime); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+d); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+d); },
+    phone() { let t=false, c=0, i=setInterval(()=>{ this.play(t?600:750,'square',0.1,0.15); t=!t; c++; if(c>15) clearInterval(i); }, 80); },
+    cough() { setTimeout(()=>this.play(150,'sawtooth',0.2,0.2),0); setTimeout(()=>this.play(130,'sawtooth',0.25,0.2),300); },
+    swish() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(800,this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(100,this.ctx.currentTime+0.3); g.gain.setValueAtTime(0.2,this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.001,this.ctx.currentTime+0.3); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+0.3); },
+    talk() { let c=0, i=setInterval(()=>{ this.play(300+Math.random()*200,'sine',0.08,0.1); c++; if(c>6) clearInterval(i); }, 100); },
+    correct() { setTimeout(()=>this.play(400,'sine',0.1,0.1),0); setTimeout(()=>this.play(600,'sine',0.15,0.1),100); },
+    wrong() { this.play(150,'sawtooth',0.3,0.15); }, fall() { this.play(100,'square',0.4,0.2); },
+    monsterHit() { this.play(120,'square',0.2,0.2); },
+    howl() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(300, this.ctx.currentTime); o.frequency.linearRampToValueAtTime(600, this.ctx.currentTime+0.8); o.frequency.linearRampToValueAtTime(400, this.ctx.currentTime+2.5); g.gain.setValueAtTime(0, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime+0.5); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+2.5); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+2.5); },
+    victory() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(440, this.ctx.currentTime); o.frequency.setValueAtTime(554, this.ctx.currentTime + 0.1); o.frequency.setValueAtTime(659, this.ctx.currentTime + 0.2); o.frequency.setValueAtTime(880, this.ctx.currentTime + 0.3); g.gain.setValueAtTime(0.2, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime+0.8); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+0.8); }
+};
+
+// =========================================
+// 🛍️ 3. 商店與背包邏輯
+// =========================================
+function updateUI() {
+    document.getElementById('coin-count').innerText = state.coins;
+    DOM.bpBtn.innerText = `🎒 我的背包 (${state.backpack.length})`;
+}
+
+function openShop() {
+    if(state.gameState < GAME_STATE.LEVEL1) return;
+    AudioEngine.play(400, 'sine', 0.1);
+    document.getElementById('shop-coin-display').innerText = state.coins;
+    document.getElementById('shop-modal').classList.remove('hidden');
+}
+function closeShop() { document.getElementById('shop-modal').classList.add('hidden'); }
+
+function buyItem(itemName, cost) {
+    if (state.coins >= cost) {
+        state.coins -= cost;
+        state.backpack.push(itemName);
+        updateUI();
+        document.getElementById('shop-coin-display').innerText = state.coins;
+        AudioEngine.correct();
+        alert(`成功購買 ${itemName}！`);
+    } else {
+        AudioEngine.wrong();
+        alert("金幣不夠喔！快去闖關賺錢吧！");
+    }
+}
+
+function openBackpack() {
+    if(state.gameState < GAME_STATE.LEVEL1) return;
+    AudioEngine.play(300, 'sine', 0.1);
+    const grid = document.getElementById('backpack-grid');
+    if (state.backpack.length === 0) {
+        grid.innerHTML = `<div style="color:#7f8c8d; width:100%;">背包空空的...</div>`;
+    } else {
+        grid.innerHTML = state.backpack.map(item => {
+            let emoji = item.slice(-2);
+            if(emoji.match(/[A-Za-z]/)) emoji = item.slice(-4);
+            return `<div class="bp-item" title="${item}">${emoji}</div>`;
+        }).join('');
+    }
+    document.getElementById('backpack-modal').classList.remove('hidden');
+}
+function closeBackpack() { document.getElementById('backpack-modal').classList.add('hidden'); }
+
+
+// =========================================
+// 🎨 4. 16-bit 渲染引擎
+// =========================================
+const C = { _:null, K:'#111', S:'#ffcc99', s:'#e6a873', R:'#d32f2f', W:'#fff', w:'#bdc3c7', B:'#3498db', b:'#2980b9', P:'#f8bbd0', p:'#f06292', H:'#5d4037', h:'#3e2723', D:'#212121', X:'#4a2e15', G:'#7f8c8d', g:'#95a5a6', E:'#e74c3c' };
+
+const sprites = [
+    ["....RRRR....","...RRRRRR...","..RRKKKKRR..",".RRKSSSSKRR.",".RKKSKKSKKR.",".RKKSSSSKKR.",".RRRssssRRR.","..RRRRRRRR..","..RWWWWwWR..",".RRWWWWwWRR.",".R.WWWWwW.R.","...WWWWWW...","...wWWWWw...","...XX..XX...","...XX..XX..."],
+    ["....KKKK....","...KKKKKK...","..KSSSSSSK..","..SKSKKSKS..","..KSSSSSSK..","...SssssS...","..BBPPPPbB..",".BBbPPPPbBB.",".B.PPPPPP.B.","...pPPPPp...","...PPPPPP...","...pPPPPp...","...S....S...","...XX..XX...","...XX..XX..."],
+    ["....HHHH....","...HHHHHH...","..HhSSSSnH..",".HhSKSKKSnH.",".HhSSSSSSnH.",".HHHssssHHH.","..DWRWWWRD..",".DDWWRWWwDD.",".D.DDDDDD.D.","...DDDDDD...","...DDDDDD...","...DDDDDD...","...S....S...","...XX..XX...","...XX..XX..."]
+];
+const monsterSprite = [ "....GGGG....","..GGggggGG..",".GggEeggEG.",".GggggggggG.",".GGGGGGGGGG.","GggggggggggG","GGGGGGGGGGGG","..GG....GG.." ];
+const wolfSprite = [ "....KKKK....","...KEEEEK...","..KKTKTKK...",".KKKKKKKK...","KKKKKKKKKKK.","KkKKkKKkKKKK","KKKKKKKKKKKK","..KK....KK.." ];
+
+function drawChar(cvsId, idx, scale) {
+    const cvs = document.getElementById(cvsId); if(!cvs) return; const ctxP = cvs.getContext('2d');
+    const m = sprites[idx], ox = (cvs.width-(m[0].length*scale))/2, oy = (cvs.height-(m.length*scale))/2;
+    ctxP.clearRect(0,0,cvs.width,cvs.height);
+    for(let r=0; r<m.length; r++) { for(let c=0; c<m[r].length; c++) { if(C[m[r][c]]) { ctxP.fillStyle=C[m[r][c]]; ctxP.fillRect(ox+c*scale, oy+r*scale, scale, scale); } } }
+}
+
+// 強制一讀取立刻畫出預覽圖，避免破圖
+setTimeout(() => { drawChar('prev-cvs-0',0,4); drawChar('prev-cvs-1',1,4); drawChar('prev-cvs-2',2,4); }, 50);
+
+const canvas = document.getElementById('gameCanvas'), ctx = canvas.getContext('2d');
+
+function drawMonster(sprite, scale, isDefeated, baseX) {
+    if(isDefeated) return;
+    const h = sprite.length * scale;
+    const x = baseX, y = 380 - h - Math.abs(Math.sin(Date.now() / 150)) * 20; 
+    ctx.save(); ctx.translate(x, y);
+    for(let r=0; r<sprite.length; r++) { for(let c=0; c<sprite[r].length; c++) { let char = sprite[r][c]; if(C[char]) { ctx.fillStyle = C[char]; ctx.fillRect(c*scale, r*scale, scale, scale); } } }
+    ctx.restore();
+}
+
+function drawPlayerGame() {
+    const s = sprites[state.selectedCharIndex], scale = 6, w = s[0].length*scale, h = s.length*scale;
+    const x = 350, y = 380 - h + state.walkOffset; 
+    ctx.save(); 
+    if(state.pet) { ctx.font = "40px Arial"; ctx.fillText(state.pet, x - 80, y + h - 10 + (state.walkOffset * 1.2)); }
+    ctx.translate(x+w/2, y+h);
+    if(state.isFalling) ctx.rotate((state.playerFallAngle*Math.PI)/180);
+    for(let r=0; r<s.length; r++) {
+        for(let c=0; c<s[r].length; c++) {
+            if(C[s[r][c]]) {
+                ctx.fillStyle='rgba(0,0,0,0.3)'; ctx.fillRect(-w/2+c*scale+4, -h+r*scale+4, scale, scale);
+                ctx.fillStyle=C[s[r][c]]; ctx.fillRect(-w/2+c*scale, -h+r*scale, scale, scale);
+            }
+        }
+    }
+    ctx.restore();
+}
+
+function triggerFall() {
+    state.isFalling = true; DOM.msg.style.display = 'block'; AudioEngine.fall();
+    let frame = 0, fallInt = setInterval(()=>{ frame++; if(frame<10) state.playerFallAngle-=6; else if(frame<20) state.playerFallAngle=-70; else if(frame<30) state.playerFallAngle+=7; else { state.playerFallAngle=0; state.isFalling=false; DOM.msg.style.display='none'; clearInterval(fallInt); } }, 30);
+}
+
+function generateConfetti() {
+    for(let i=0; i<100; i++) {
+        state.confetti.push({
+            x: Math.random() * canvas.width, y: Math.random() * -canvas.height,
+            r: Math.random() * 6 + 2, d: Math.random() * 2 + 1,
+            color: `hsl(${Math.random()*360}, 100%, 50%)`, tilt: Math.random() * 10
+        });
+    }
+}
+function drawConfetti() {
+    if(state.confetti.length === 0) return;
+    state.confetti.forEach((c, i) => {
+        ctx.beginPath(); ctx.lineWidth = c.r; ctx.strokeStyle = c.color;
+        ctx.moveTo(c.x + c.tilt + c.r, c.y); ctx.lineTo(c.x + c.tilt, c.y + c.tilt + c.r); ctx.stroke();
+        c.y += c.d; c.tilt += 0.1;
+        if (c.y > canvas.height) state.confetti[i].y = -10; 
+    });
+}
+
+function drawForestBG(offset) {
+    ctx.fillStyle='#87CEEB'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#FFF'; for(let i=-1; i<4; i++) { let cx=(i*400-(offset*0.2)%400); ctx.fillRect(cx+50,40,80,20); ctx.fillRect(cx+70,20,40,20); }
+    const gY=380; ctx.fillStyle='#2ecc71'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#8B4513'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+    for(let i=-2; i<6; i++) { let fx=i*250-(offset%250); ctx.fillStyle='#5c4033'; ctx.fillRect(fx+80,gY-60,15,60); ctx.fillStyle='#228B22'; ctx.fillRect(fx+50,gY-120,75,75); ctx.fillStyle='#95a5a6'; ctx.fillRect(fx+160,gY-15,30,15); }
+}
+function drawCaveBG(offset) {
+    ctx.fillStyle='#2c3e50'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#34495e'; 
+    for(let i=0; i<12; i++) { let fx = i*80 - (offset*0.3)%80; ctx.beginPath(); ctx.moveTo(fx, 0); ctx.lineTo(fx+40, 80+(i%3)*30); ctx.lineTo(fx+80, 0); ctx.fill(); }
+    const gY=380; ctx.fillStyle='#7f8c8d'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#2c3e50'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+    for(let i=-2; i<6; i++) { let fx=i*200-(offset%200); ctx.fillStyle='#95a5a6'; ctx.fillRect(fx+80,gY-40,40,40); ctx.fillStyle='#bdc3c7'; ctx.fillRect(fx+90,gY-20,20,20); }
+}
+function drawIceBG(offset) {
+    ctx.fillStyle='#a0c4ff'; ctx.fillRect(0,0,canvas.width,canvas.height);
+    const gY=380; ctx.fillStyle='#ecf0f1'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#bdc3c7'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+    for(let i=-2; i<6; i++) { let fx=i*250-(offset%250); ctx.fillStyle='#7f8c8d'; ctx.fillRect(fx+80,gY-60,15,60); ctx.fillStyle='#ecf0f1'; ctx.fillRect(fx+50,gY-120,75,75); ctx.fillStyle='#dfe6e9'; ctx.fillRect(fx+160,gY-15,30,15); }
+}
+function drawTreasureBG(offset) {
+    ctx.fillStyle='#1e272e'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#2f3640'; ctx.lineWidth=2;
+    for(let i=0; i<10; i++) { ctx.beginPath(); ctx.moveTo(0, i*60); ctx.lineTo(800, i*60); ctx.stroke(); for(let j=0; j<10; j++) { let x = j*120 + (i%2)*60 - (offset*0.1)%120; ctx.beginPath(); ctx.moveTo(x, i*60); ctx.lineTo(x, i*60+60); ctx.stroke(); } }
+    const gY=380; ctx.fillStyle='#2f3640'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#111'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+}
+function drawCastleBG(offset) {
+    ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#2c3e50'; 
+    for(let i=-2; i<6; i++) { let fx = i*150 - (offset*0.5)%150; ctx.fillRect(fx, 100, 100, 300); ctx.fillRect(fx+20, 60, 60, 40); }
+    const gY=380; ctx.fillStyle='#34495e'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#2c3e50'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+}
+
+function drawPalaceBG(offset) {
+    ctx.fillStyle='#c0392b'; ctx.fillRect(0,0,canvas.width,canvas.height); 
+    ctx.fillStyle='#f1c40f'; for(let i=-1; i<5; i++) { let fx = i*200 - (offset*0.2)%200; ctx.fillRect(fx+50, 50, 100, 200); }
+    const gY=380; ctx.fillStyle='#d35400'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#e67e22'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+    
+    let bedX = state.endingBedX - offset + 500; 
+    ctx.font = "120px Arial"; ctx.fillText("🛏️", bedX, gY - 20); ctx.font = "70px Arial";
+    if(!state.grandpaHealed) {
+        ctx.fillText("🧓", bedX + 20, gY - 50); 
+        ctx.font = "40px Arial"; ctx.fillText("👑", bedX - 50, gY - 10); 
+    } else {
+        ctx.fillText("🤴", bedX + 20, gY - 70); 
+    }
+}
+
+function gameLoop() {
+    if(state.gameState < GAME_STATE.LEVEL1) return; 
+    
+    if(state.scrollX < state.targetScrollX) { 
+        state.scrollX += 5; // 修正滑動平滑度
+        if(state.scrollX > state.targetScrollX) state.scrollX = state.targetScrollX;
+        state.isWalking = true; state.walkOffset = Math.sin(Date.now()/80)*8; 
+    } 
+    else { state.isWalking = false; state.walkOffset = 0; }
+    
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    
+    if(state.gameState === GAME_STATE.LEVEL1) { drawForestBG(state.scrollX); }
+    else if(state.gameState === GAME_STATE.LEVEL2) { drawCaveBG(state.scrollX); }
+    else if(state.gameState === GAME_STATE.LEVEL3) { drawIceBG(state.scrollX); }
+    else if(state.gameState === GAME_STATE.LEVEL4) { drawTreasureBG(state.scrollX); }
+    else if(state.gameState === GAME_STATE.LEVEL5) { drawCastleBG(state.scrollX); }
+    else if(state.gameState === GAME_STATE.ENDING) { drawPalaceBG(state.scrollX); }
+    
+    if(state.gameState === GAME_STATE.LEVEL2) { drawMonster(monsterSprite, 8, state.monsterDefeated, 100); }
+    else if(state.gameState === GAME_STATE.LEVEL5) { drawMonster(wolfSprite, 10, state.wolfDefeated, 50); } 
+    
+    drawPlayerGame();
+    
+    if(state.gameState === GAME_STATE.ENDING && state.grandpaHealed) drawConfetti();
+    
+    requestAnimationFrame(gameLoop);
+}
+
+// =========================================
+// 🚀 5. 遊戲流程腳本
+// =========================================
+const storyPages = [
+    `媽媽接到電話 <span class="action-text">[☎️ 鈴鈴鈴...]</span> ，阿公生病了...<br><br>需要有人帶食物去給阿公 <span class="action-text">[😷 咳咳...]</span>。`,
+    `我表示我可以！<br><br>媽媽將東西給我。<br><br><span class="action-text">[🎒 獲得食物與手機...]</span>`,
+    `媽媽叮囑我路上小心 <span class="action-text">[💬 叮嚀聲...]</span>。<br><br><span class="highlight">【目標：帶食物去阿公家】</span><br>準備出發了嗎？`
+];
+
+DOM.cards.forEach(c => c.onclick=()=>{ DOM.cards.forEach(x=>x.classList.remove('selected')); c.classList.add('selected'); state.selectedCharIndex=parseInt(c.dataset.char); AudioEngine.play(400,'sine',0.1); });
+document.getElementById('confirm-char-btn').onclick = () => { state.playerName = document.getElementById('name-input').value||'冒險者'; DOM.sel.classList.add('hidden'); DOM.story.classList.remove('hidden'); AudioEngine.init(); renderStory(); };
+
+function renderStory() {
+    document.getElementById('story-text').innerHTML = storyPages[state.storyPage];
+    let f=document.getElementById('item-food'), p=document.getElementById('item-phone');
+    f.style.opacity='0'; f.style.top='20%'; f.style.transform='scale(1)'; p.style.opacity='0'; p.style.top='20%'; p.style.transform='scale(1)';
+    if(state.storyPage===0) { setTimeout(()=>AudioEngine.phone(), 200); setTimeout(()=>AudioEngine.cough(), 1500); }
+    else if(state.storyPage===1) {
+        setTimeout(()=>{ f.style.opacity='1'; p.style.opacity='1'; 
+            setTimeout(()=>{ f.style.top='100%'; f.style.transform='scale(0.1)'; p.style.top='100%'; p.style.transform='scale(0.1)'; AudioEngine.swish(); state.backpack=['食物🍙','手機📱']; updateUI(); setTimeout(()=>{ f.style.opacity='0'; p.style.opacity='0'; },800); },800); 
+        },300);
+    } else { setTimeout(()=>AudioEngine.talk(),200); DOM.nextBtn.innerText="準備出發！"; }
+}
+DOM.nextBtn.onclick = () => { AudioEngine.play(500,'triangle',0.1); if(state.storyPage<2) { state.storyPage++; renderStory(); } else startLevel1(); };
+document.getElementById('skip-story').onclick = () => { state.backpack=['食物🍙','手機📱']; updateUI(); startLevel1(); };
+
+// 💡 解除卡點：移除 isWalking 限制，讓玩家不需等待走路動畫即可連續點擊作答
+function handleAns(sel, cor, btnEl, nextFn) {
+    if(state.isFalling) return; // 只有在跌倒受罰時鎖定操作
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    
+    if(sel === cor) {
+        AudioEngine.correct(); if(state.gameState === GAME_STATE.LEVEL2 || state.gameState === GAME_STATE.LEVEL5) AudioEngine.monsterHit(); 
+        btnEl.style.backgroundColor = '#2ecc71'; state.coins+=10; updateUI();
+        state.targetScrollX+=300; state.currentQuestionIndex++; setTimeout(nextFn, 800);
+    } else {
+        AudioEngine.wrong(); btnEl.style.backgroundColor = '#e74c3c'; state.mistakesCurrentQuestion++; triggerFall();
+        if(state.mistakesCurrentQuestion >= 3) {
+            setTimeout(()=>{ 
+                if(!state.currentQuestions[state.currentQuestionIndex].isReview) state.mistakeReviewPool.push(state.currentQuestions[state.currentQuestionIndex]); 
+                state.targetScrollX+=300; state.currentQuestionIndex++; nextFn(); 
+            }, 1200);
+        } else { setTimeout(() => { document.querySelectorAll('.option-btn').forEach(b => { b.disabled = false; if(b.innerText !== sel) b.style.backgroundColor = '#f1c40f'; }); }, 800); }
+    }
+}
+
+// L1 森林
+function startLevel1() {
+    DOM.story.classList.add('hidden'); DOM.game.classList.remove('hidden'); state.gameState = GAME_STATE.LEVEL1; state.currentQuestionIndex = 0;
+    const allLetters = "ABCDEFGHIJKLMNO".split(''); const numQ = Math.floor(Math.random() * 3) + 3; 
+    const selected = allLetters.sort(() => 0.5 - Math.random()).slice(0, numQ);
+    state.currentQuestions = selected.map(L => { let ans = L.toLowerCase(); let opts = [ans]; while(opts.length < 3) { let r = String.fromCharCode(97 + Math.floor(Math.random() * 26)); if(!opts.includes(r) && r !== ans) opts.push(r); } return { target: L, answer: ans, options: opts.sort(() => Math.random() - 0.5) }; });
+    setTimeout(() => { let h = document.getElementById('player-progress-head'), n0 = document.getElementById('node-0'); h.style.left = n0.offsetLeft + (n0.offsetWidth/2) + 'px'; }, 100);
+    renderLevel1(); gameLoop();
+}
+function renderLevel1() {
+    if(state.currentQuestionIndex >= state.currentQuestions.length) {
+        DOM.board.innerHTML = `<div style="padding:20px;"><h2>🎉 森林通關！</h2></div>`; document.getElementById('node-0').classList.add('completed'); let h = document.getElementById('player-progress-head'), n1 = document.getElementById('node-1'); h.style.left = n1.offsetLeft + (n1.offsetWidth/2) + 'px'; state.targetScrollX+=300; setTimeout(startLevel2, 3000); return;
+    }
+    const q = state.currentQuestions[state.currentQuestionIndex];
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🌲 第 1 關：森林字母傳送門</div><div style="font-size:4.5rem; color:#c0392b; font-weight:bold; text-shadow:3px 3px #fff; margin:10px 0;">${q.target}</div><div class="options-container" id="options"></div>`;
+    DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0;
+    q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel1); DOM.opts.appendChild(btn); });
+}
+
+// L2 洞穴
+const L2_VERBS = [ {e:"dance", z:"跳舞"}, {e:"sing", z:"唱歌"}, {e:"ride a bike", z:"騎車"} ];
+const L2_NOUNS = [ {e:"dog", z:"狗"}, {e:"cat", z:"貓"}, {e:"bird", z:"鳥"} ];
+function startLevel2() {
+    state.gameState = GAME_STATE.LEVEL2; state.currentQuestionIndex = 0; state.monsterDefeated = false;
+    let qs = []; const numQ = Math.floor(Math.random() * 3) + 3;
+    for(let i=0; i<numQ; i++) {
+        let isVerb = Math.random() > 0.5, isEnToZh = Math.random() > 0.5, qText, aText, opts = [];
+        if(isVerb) { let v = [...L2_VERBS].sort(()=>0.5-Math.random()).slice(0,3); if(isEnToZh) { qText = `Can you ${v[0].e}?`; aText = `你會${v[0].z}嗎？`; opts = [aText, `你會${v[1].z}嗎？`, `你會${v[2].z}嗎？`]; } else { qText = `你會${v[0].z}嗎？`; aText = `Can you ${v[0].e}?`; opts = [aText, `Can you ${v[1].e}?`, `Can you ${v[2].e}?`]; } } 
+        else { let n = [...L2_NOUNS].sort(()=>0.5-Math.random()).slice(0,3), isThis = Math.random() > 0.5, ep = isThis?"this":"that", zp = isThis?"這":"那"; if(isEnToZh) { qText = `Is ${ep} a ${n[0].e}?`; aText = `${zp}是${n[0].z}嗎？`; opts = [aText, `${zp}是${n[1].z}嗎？`, `${zp}是${n[2].z}嗎？`]; } else { qText = `${zp}是${n[0].z}嗎？`; aText = `Is ${ep} a ${n[0].e}?`; opts = [aText, `Is ${ep} a ${n[1].e}?`, `Is ${ep} a ${n[2].e}?`]; } }
+        qs.push({ target: qText, answer: aText, options: opts.sort(()=>0.5-Math.random()) });
+    }
+    state.currentQuestions = qs; state.targetScrollX += 800; 
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🦇 第 2 關：咒語翻譯官</div><div style="font-size:1.2rem; color:#e74c3c; font-weight: bold; margin: 10px 0;">走入洞穴突然跳出石頭怪，在後面追趕玩家！</div>`;
+    setTimeout(renderLevel2, 2500);
+}
+function renderLevel2() {
+    if(state.currentQuestionIndex >= state.currentQuestions.length) {
+        state.monsterDefeated = true; DOM.board.innerHTML = `<div style="padding:20px;"><h2>🎉 甩掉石頭怪了！</h2></div>`; document.getElementById('node-1').classList.add('completed'); let h = document.getElementById('player-progress-head'), n2 = document.getElementById('node-2'); h.style.left = n2.offsetLeft + (n2.offsetWidth/2) + 'px'; state.targetScrollX += 500; setTimeout(startLevel3, 3000); return; 
+    }
+    const q = state.currentQuestions[state.currentQuestionIndex];
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🦇 第 2 關：咒語翻譯官</div><div style="font-size:2.5rem; color:#f1c40f; font-weight: bold; text-shadow:2px 2px #000; margin: 10px 0;">${q.target}</div><div class="options-container" id="options"></div>`;
+    DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0;
+    q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.style.fontSize = '1.5rem'; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel2); DOM.opts.appendChild(btn); });
+}
+
+// L3 冰山拼圖
+const L3_ANIMALS = [ { e: "Bird", z: "鳥", emo: "🐦" }, { e: "Cat", z: "貓", emo: "🐱" }, { e: "Dog", z: "狗", emo: "🐶" } ];
+let l3_data = { animals: [], current: 0, pieces: [], board: [null,null,null,null], selectedIdx: null };
+function startLevel3() { state.gameState = GAME_STATE.LEVEL3; l3_data.animals = [...L3_ANIMALS].sort(()=>0.5-Math.random()).slice(0, 3); l3_data.current = 0; state.targetScrollX += 800; setTimeout(renderL3Puzzle, 1000); }
+window.handleL3PieceClick = function(idx) { l3_data.selectedIdx = idx; document.querySelectorAll('.p-piece').forEach(p => p.style.borderColor = '#bdc3c7'); document.getElementById(`piece-${idx}`).style.borderColor = '#e74c3c'; AudioEngine.play(400, 'sine', 0.1); }
+window.handleL3SlotClick = function(slot) {
+    if (l3_data.board[slot] !== null) { let pId = l3_data.board[slot]; let idx = l3_data.pieces.indexOf(pId); document.getElementById(`piece-${idx}`).style.visibility = 'visible'; l3_data.board[slot] = null; document.querySelector(`[data-slot="${slot}"]`).style.backgroundImage = 'none'; AudioEngine.play(300, 'sine', 0.1); } 
+    else if (l3_data.selectedIdx !== null) { l3_data.board[slot] = l3_data.pieces[l3_data.selectedIdx]; const slotEl = document.querySelector(`[data-slot="${slot}"]`), pieceCvs = document.getElementById(`piece-${l3_data.selectedIdx}`); slotEl.style.backgroundImage = `url(${pieceCvs.toDataURL()})`; pieceCvs.style.visibility = 'hidden'; document.querySelectorAll('.p-piece').forEach(p=>p.style.borderColor = '#bdc3c7'); l3_data.selectedIdx = null; AudioEngine.play(600, 'triangle', 0.1); checkL3Win(); }
+}
+window.selectPet = function(emoji) { state.pet = emoji; AudioEngine.correct(); DOM.board.innerHTML = `<div style="padding:20px;"><h2>太棒了！${emoji} 成為夥伴！</h2></div>`; document.getElementById('node-2').classList.add('completed'); let h = document.getElementById('player-progress-head'), n3 = document.getElementById('node-3'); h.style.left = n3.offsetLeft + (n3.offsetWidth/2) + 'px'; state.targetScrollX += 400; setTimeout(startLevel4, 3000); }
+function checkL3Win() {
+    if(l3_data.board[0]===0 && l3_data.board[1]===1 && l3_data.board[2]===2 && l3_data.board[3]===3) {
+        const utter = new SpeechSynthesisUtterance(l3_data.animals[l3_data.current].e); utter.lang = 'en-US'; window.speechSynthesis.speak(utter); state.coins += 20; updateUI();
+        setTimeout(() => { l3_data.current++; if(l3_data.current >= 3) { DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🎉 選擇一隻幻獸夥伴吧！</div><div style="display:flex; gap: 20px; justify-content: center; margin-top: 20px;">${l3_data.animals.map(a => `<div style="background:#f1c40f; border: 4px solid #d35400; border-radius: 8px; padding: 10px 20px; cursor: pointer;" onclick="selectPet('${a.emo}')"><div style="font-size: 3rem;">${a.emo}</div></div>`).join('')}</div>`; } else { state.targetScrollX += 200; renderL3Puzzle(); } }, 1500);
+    }
+}
+function renderL3Puzzle() {
+    l3_data.board = [null, null, null, null]; l3_data.selectedIdx = null; l3_data.pieces = [0, 1, 2, 3].sort(()=>0.5-Math.random()); 
+    DOM.board.innerHTML = `<div style="font-size: 1.2rem; font-weight:bold; color:#2c3e50; margin-bottom: 5px;">❄️ 幻獸圖鑑 (${l3_data.current + 1}/3)</div><div style="display:flex; gap: 20px; justify-content: center; align-items: center; margin-top: 5px;"><div style="display:grid; grid-template-columns: 70px 70px; grid-template-rows: 70px 70px; gap: 2px; background:#34495e; padding:4px; border-radius:4px;">${[0,1,2,3].map(i => `<div class="p-slot" data-slot="${i}" style="width:70px; height:70px; background:#7f8c8d; cursor:pointer; background-size:cover;" onclick="handleL3SlotClick(${i})"></div>`).join('')}</div><div style="display:flex; flex-wrap:wrap; width: 150px; gap: 8px; justify-content: center;">${l3_data.pieces.map((pId, idx) => `<canvas class="p-piece" id="piece-${idx}" data-idx="${idx}" data-pid="${pId}" width="70" height="70" style="border: 4px solid #bdc3c7; border-radius: 4px; cursor:pointer; background:#ecf0f1; box-sizing:border-box;" onclick="handleL3PieceClick(${idx})"></canvas>`).join('')}</div></div>`;
+    const tCvs = document.createElement('canvas'); tCvs.width=140; tCvs.height=140; const tCtx = tCvs.getContext('2d'); tCtx.font = "100px Arial"; tCtx.textAlign = "center"; tCtx.textBaseline = "middle"; tCtx.fillText(l3_data.animals[l3_data.current].emo, 70, 75);
+    const coords = [ {x:0, y:0}, {x:70, y:0}, {x:0, y:70}, {x:70, y:70} ]; l3_data.pieces.forEach((pId, idx) => { document.getElementById(`piece-${idx}`).getContext('2d').drawImage(tCvs, coords[pId].x, coords[pId].y, 70, 70, 0, 0, 70, 70); });
+}
+
+// L4 魔法卷軸
+const L4_ITEMS = [ { word: "hen", emo: "🐔" }, { word: "pen", emo: "🖊️" }, { word: "net", emo: "🕸️" }, { word: "dog", emo: "🐶" }, { word: "cat", emo: "🐱" } ];
+let l4_data = { left: [], right: [], selected: null, matched: [] };
+function startLevel4() {
+    state.gameState = GAME_STATE.LEVEL4; let items = [...L4_ITEMS].sort(()=>0.5-Math.random()).slice(0, 5); l4_data.left = [...items].sort(()=>0.5-Math.random()); l4_data.right = [...items].sort(()=>0.5-Math.random()); l4_data.selected = null; l4_data.matched = []; state.targetScrollX += 800; 
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 20px;">📦 發現一個古老的寶箱！</div><div style="font-size: 6rem; cursor:pointer;" onclick="openChest(this)">🧰</div><div style="color:#7f8c8d; margin-top:10px; font-weight:bold;">(點擊打開)</div>`;
+}
+window.openChest = function(el) { AudioEngine.play(300, 'square', 0.2); el.innerText = "📜"; setTimeout(renderL4Scroll, 800); }
+function renderL4Scroll() {
+    // 💡 解決排版：加入了字體改為純黑色以提高辨識度 (color: #000000)
+    DOM.board.innerHTML = `<div style="font-size: 1.2rem; font-weight:bold; color:#2c3e50; margin-bottom: 5px;">📜 魔法卷軸：記憶連結</div><div style="font-size: 0.9rem; color: #7f8c8d; margin-bottom: 10px; font-weight:bold;">點擊左側單字，再點右側圖片！</div><div id="l4-container" style="position: relative; background: #f39c12; padding: 15px; border-radius: 8px; border: 6px solid #d35400; display:flex; justify-content: space-between; width: 380px; margin: 0 auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.3);"><svg id="l4-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;"></svg><div style="display:flex; flex-direction:column; gap:10px; z-index:2;">${l4_data.left.map((item, idx) => `<div id="l4-word-${idx}" style="background:#ecf0f1; border:4px solid #34495e; border-radius:4px; padding:5px 10px; font-size:1.2rem; font-weight:bold; color:#000000; cursor:pointer; width:60px; text-align:center; transition:0.2s;" onclick="handleL4Click('word', ${idx}, '${item.word}')">${item.word}</div>`).join('')}</div><div style="display:flex; flex-direction:column; gap:10px; z-index:2;">${l4_data.right.map((item, idx) => `<div id="l4-emo-${idx}" style="background:#ecf0f1; border:4px solid #34495e; border-radius:50%; width:45px; height:45px; display:flex; justify-content:center; align-items:center; font-size:1.8rem; cursor:pointer; transition: box-shadow 0.3s, border-color 0.3s;" onclick="handleL4Click('emo', ${idx}, '${item.word}')">${item.emo}</div>`).join('')}</div></div>`;
+    drawL4Lines();
+}
+window.handleL4Click = function(type, idx, word) {
+    if(l4_data.matched.includes(word)) return; 
+    if(type === 'word') {
+        l4_data.selected = { idx, word }; l4_data.left.forEach((_, i) => { let el = document.getElementById(`l4-word-${i}`); if(!l4_data.matched.includes(l4_data.left[i].word)) el.style.borderColor = '#34495e'; });
+        document.getElementById(`l4-word-${idx}`).style.borderColor = '#e74c3c'; AudioEngine.play(400, 'sine', 0.1);
+    } else if(type === 'emo' && l4_data.selected) {
+        if(l4_data.selected.word === word) {
+            l4_data.matched.push(word); AudioEngine.correct();
+            document.getElementById(`l4-emo-${idx}`).style.boxShadow = "0 0 15px 4px #f1c40f"; document.getElementById(`l4-emo-${idx}`).style.borderColor = "#f1c40f";
+            const wordEl = document.getElementById(`l4-word-${l4_data.selected.idx}`); wordEl.style.borderColor = "#2ecc71"; wordEl.style.backgroundColor = "#2ecc71"; wordEl.style.color = "#ffffff";
+            l4_data.selected = null; drawL4Lines(); checkL4Win(); 
+        } else { AudioEngine.wrong(); document.getElementById(`l4-word-${l4_data.selected.idx}`).style.borderColor = '#34495e'; l4_data.selected = null; }
+    }
+}
+function drawL4Lines() {
+    const svg = document.getElementById('l4-svg'); if(!svg) return; svg.innerHTML = '';
+    l4_data.matched.forEach(word => {
+        const leftIdx = l4_data.left.findIndex(i => i.word === word), rightIdx = l4_data.right.findIndex(i => i.word === word);
+        const el1 = document.getElementById(`l4-word-${leftIdx}`), el2 = document.getElementById(`l4-emo-${rightIdx}`);
+        const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+        line.setAttribute("x1", el1.offsetLeft + el1.offsetWidth); line.setAttribute("y1", el1.offsetTop + el1.offsetHeight / 2); line.setAttribute("x2", el2.offsetLeft); line.setAttribute("y2", el2.offsetTop + el2.offsetHeight / 2);
+        line.setAttribute("stroke", "#c0392b"); line.setAttribute("stroke-width", "4"); line.setAttribute("stroke-linecap", "round"); svg.appendChild(line);
+    });
+}
+function checkL4Win() {
+    if(l4_data.matched.length === l4_data.left.length) {
+        state.coins += 30; updateUI();
+        setTimeout(() => {
+            AudioEngine.phone();
+            DOM.board.innerHTML = `<div style="padding:20px;"><h2 style="color:#e74c3c;">📞 媽媽來電</h2><p style="font-size:1.2rem; font-weight:bold;">「你到哪了？要趕快去找阿公，不要亂跑喔！」</p><button class="pixel-btn" onclick="startLevel5()" style="margin-top:15px;">我知道了！</button></div>`;
+            document.getElementById('node-3').classList.add('completed'); let h = document.getElementById('player-progress-head'), n4 = document.getElementById('node-4'); h.style.left = n4.offsetLeft + (n4.offsetWidth/2) + 'px';
+            state.targetScrollX += 400; 
+        }, 1500); 
+    }
+}
+
+// L5 大野狼與大結局
+window.startLevel5 = function() {
+    state.gameState = GAME_STATE.LEVEL5; state.currentQuestionIndex = 0; state.wolfDefeated = false;
+    let l5Qs = []; let mistakes = [...state.mistakeReviewPool].sort(()=>0.5-Math.random()).slice(0, 3);
+    mistakes.forEach(m => l5Qs.push({ ...m, isReview: true }));
+    const nouns = [ {e:"cat", emo:"🐱"}, {e:"dog", emo:"🐶"}, {e:"bird", emo:"🐦"}, {e:"ox", emo:"🐂"}, {e:"rabbit", emo:"🐰"} ];
+    
+    // 確保最終剛好 6 題
+    while(l5Qs.length < 6) {
+        let n1 = nouns[Math.floor(Math.random()*nouns.length)], n2 = nouns[Math.floor(Math.random()*nouns.length)];
+        let isYes = (Math.random() > 0.5), qText, aText, opts;
+        if(isYes) { qText = `Is it a ${n1.e}?`; aText = `Yes, it is a ${n1.e}.`; opts = [aText, `No, it's not a ${n1.e}.`, `Yes, it is a ${n2.e}.`]; } 
+        else { while(n1.e === n2.e) n2 = nouns[Math.floor(Math.random()*nouns.length)]; qText = `Is it a ${n2.e}?`; aText = `No, it's not a ${n2.e}.`; opts = [aText, `Yes, it is a ${n1.e}.`, `No, it is a ${n1.e}.`]; }
+        
+        opts = [...new Set(opts)]; 
+        while(opts.length < 3) {
+            let rnd = nouns[Math.floor(Math.random()*nouns.length)].e;
+            opts.push(`Yes, it is a ${rnd}.`);
+            opts = [...new Set(opts)]; // 防呆避免重複
+        }
+        l5Qs.push({ target: qText, answer: aText, options: opts.sort(()=>0.5-Math.random()), emo: n1.emo, isReview: false });
+    }
+    state.currentQuestions = l5Qs;
+    DOM.board.innerHTML = `<div style="font-size: 2rem; font-weight:bold; color:#e74c3c; margin-bottom: 20px;">🐺 最終考驗：快跑！</div>`;
+    AudioEngine.howl(); state.targetScrollX += 800; setTimeout(renderLevel5, 3000);
+}
+
+function renderLevel5() {
+    if(state.currentQuestionIndex >= state.currentQuestions.length) {
+        state.wolfDefeated = true; 
+        state.gameState = GAME_STATE.ENDING;
+        state.endingBedX = state.scrollX + 600; 
+        state.targetScrollX += 600; 
+        
+        DOM.board.innerHTML = `<div style="padding:20px;"><h2>🏰 抵達皇宮！</h2><p>把食物給阿公吃吧！</p></div>`;
+        document.getElementById('node-4').classList.add('completed'); document.getElementById('node-4').innerText='✔️';
+        let h = document.getElementById('player-progress-head'), n4 = document.getElementById('node-4'); h.style.left = n4.offsetLeft + (n4.offsetWidth/2) + 'px';
+        
+        setTimeout(playEndingAnimation, 2500);
+        return;
+    }
+    const q = state.currentQuestions[state.currentQuestionIndex];
+    let html = `<div style="font-size: 1.4rem; font-weight:bold; color:#e74c3c; margin-bottom: 10px;">🐺 最終關：終極影分身</div>`;
+    if(q.emo && !q.isReview) html += `<div style="font-size:4rem;">${q.emo}</div>`;
+    html += `<div style="font-size:2rem; color:#2c3e50; font-weight: bold; margin: 10px 0;">${q.isReview ? "⚠️ 複習錯題：<br>" : ""}${q.target}</div><div class="options-container" id="options"></div>`;
+    DOM.board.innerHTML = html; DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0;
+    q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.style.fontSize = '1.2rem'; btn.style.padding = '8px 12px'; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel5); DOM.opts.appendChild(btn); });
+}
+
+function playEndingAnimation() {
+    const foodIdx = state.backpack.indexOf('食物🍙');
+    if(foodIdx > -1) state.backpack.splice(foodIdx, 1);
+    updateUI();
+    
+    DOM.board.innerHTML = `<div style="padding:20px;"><h2>🍙 餵阿公吃食物...</h2></div>`;
+    AudioEngine.swish();
+    
+    setTimeout(() => {
+        state.grandpaHealed = true; 
+        AudioEngine.victory(); 
+        generateConfetti(); 
+        
+        DOM.board.innerHTML = `
+            <div style="padding:20px;">
+                <h1 style="color:#e74c3c; font-size:3rem; margin:0;">🎉 任務大成功！🎉</h1>
+                <p style="font-size:1.5rem; font-weight:bold;">阿公病好了！謝謝你，${state.playerName}！</p>
+                <p>總共收集金幣：💰 ${state.coins}</p>
+                <button class="pixel-btn" onclick="location.reload()" style="margin-top:15px;">再玩一次</button>
+            </div>
+        `;
+    }, 1500);
+}
+
+</script>
+</body>
+</html>

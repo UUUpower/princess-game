@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>優妮公主英文歷險記</title>
+<title>公主的英文歷險記</title>
 <style>
     /* =========================================
        🎨 1. 全域與響應式 (RWD) 樣式設定
@@ -24,7 +24,6 @@
     .pixel-btn:hover:not(:disabled) { transform: translate(2px, 2px); box-shadow: 2px 2px 0px #000; }
     .pixel-btn:disabled { background-color: #95a5a6; border-color: #7f8c8d; cursor: not-allowed; box-shadow: none; transform: translate(2px, 2px); }
 
-    /* 角色選擇 */
     #char-select-screen { background-color: #2980b9; border: 8px solid #34495e; }
     #char-title { font-size: 2.5rem; color: #f1c40f; margin-bottom: 20px; text-shadow: 3px 3px #000; }
     #name-input { background-color: #ecf0f1; border: 4px solid #34495e; padding: 12px; font-size: 1.5rem; font-family: inherit; margin-bottom: 40px; width: 300px; text-align: center; font-weight: bold; color: #2c3e50; outline: none; }
@@ -33,7 +32,6 @@
     .char-card.selected { border-color: #f1c40f; background-color: rgba(241, 196, 15, 0.3); transform: scale(1.1); box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
     .preview-canvas { width: 96px; height: 128px; image-rendering: pixelated; display: block; }
 
-    /* 故事前言 */
     #story-screen { background-color: #1a1a1a; border: 8px solid #8e44ad; justify-content: center; padding: 60px 40px; }
     #story-box { background-color: rgba(0,0,0,0.8); border: 4px solid #ecf0f1; padding: 40px; border-radius: 8px; width: 85%; min-height: 220px; display: flex; align-items: flex-start; justify-content: left; box-shadow: inset 0 0 20px rgba(255,255,255,0.1); z-index: 10; }
     #story-text { font-size: 1.6rem; line-height: 1.8; text-align: left; text-shadow: 2px 2px #000; color: #ecf0f1; width: 100%; }
@@ -44,7 +42,6 @@
     #story-anim-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; overflow: hidden; }
     .falling-item { position: absolute; font-size: 4rem; top: 20%; opacity: 0; transition: all 0.8s cubic-bezier(0.25, 1, 0.5, 1); filter: drop-shadow(2px 4px 6px black); }
 
-    /* 遊戲主畫面佈局 */
     #main-game-screen { padding: 0; justify-content: space-between; background-color: transparent; }
     #header { background-color: #34495e; color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 6px solid #2c3e50; height: 50px; z-index: 20; box-shadow: 0 4px 10px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; }
     #progress-container { position: relative; width: 350px; display: flex; justify-content: space-between; align-items: center; }
@@ -72,7 +69,6 @@
     #message-area { margin-top: 20px; font-size: 1.5rem; color: white; background-color: #e74c3c; padding: 10px 20px; border: 6px solid #c0392b; display: none; font-weight: bold; text-shadow: 2px 2px #000; border-radius: 8px; animation: shake 0.4s; }
     @keyframes shake { 0%{transform: translateX(0);} 25%{transform: translateX(-10px);} 50%{transform: translateX(10px);} 75%{transform: translateX(-10px);} 100%{transform: translateX(0);} }
 
-    /* Footer 調整為兩側對齊 */
     #footer { background-color: #34495e; padding: 15px 20px; border-top: 6px solid #2c3e50; display: flex; justify-content: space-between; align-items: center; z-index: 20; box-shadow: 0 -4px 10px rgba(0,0,0,0.5); width: 100%; box-sizing: border-box; }
     
     .footer-left { display: flex; gap: 15px; align-items: center; }
@@ -85,7 +81,7 @@
     #restart-btn { background-color: #e74c3c; color: white; border: 4px solid #c0392b; padding: 10px 20px; font-size: 1.2rem; font-family: inherit; font-weight: bold; cursor: pointer; box-shadow: 4px 4px 0px #000; border-radius: 4px; pointer-events: auto; transition: transform 0.1s; }
     #restart-btn:hover { transform: translateY(2px); box-shadow: 2px 2px 0px #000; background-color: #c0392b; }
 
-    /* 🛍️ 各種彈出視窗 */
+    /* 🛍️ 商店、背包與電話彈出視窗 */
     .modal-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; display: flex; justify-content: center; align-items: center; pointer-events: auto; }
     .modal-box { background: #ecf0f1; border: 8px solid #34495e; border-radius: 8px; padding: 30px; width: 85%; max-width: 550px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: relative; max-height: 90vh; overflow-y: auto; }
     .close-btn { position: absolute; top: 10px; right: 15px; font-size: 2rem; color: #c0392b; cursor: pointer; font-weight: bold; }
@@ -221,7 +217,7 @@
         <div id="phone-modal" class="modal-overlay hidden">
             <div class="modal-box ringing" id="phone-box">
                 <h2 style="color:#e74c3c; margin-top:0;">📞 未知來電</h2>
-                <p style="font-weight:bold; color:#34495e; font-size:1.2rem;">請輸入 5 位英文字母密碼解鎖手機！</p>
+                <p style="font-weight:bold; color:#34495e; font-size:1.2rem;">請聽取並輸入密碼解鎖手機！</p>
                 <button class="pixel-btn" onclick="playPhonePassword()">🔊 聽取密碼</button>
                 <div id="phone-display" style="font-size: 2.5rem; letter-spacing: 15px; margin: 20px 0; font-weight: bold; background: #ecf0f1; padding: 15px; border-radius: 8px; border: 4px solid #bdc3c7; color:#2c3e50;">_ _ _ _ _</div>
                 <div id="phone-keypad" class="phone-keypad"></div>
@@ -233,12 +229,9 @@
 
 <script>
 /**
- * 公主歷險記 - 全螢幕與戰略生存版 v5.0 (Dustine)
+ * 公主歷險記 - 密碼優化版 v5.1 (Dustine)
  */
 
-// =========================================
-// 📱 RWD 畫面縮放系統
-// =========================================
 function resizeGame() {
     const container = document.getElementById('game-container');
     const scaleX = window.innerWidth / 800;
@@ -250,24 +243,17 @@ window.addEventListener('resize', resizeGame);
 window.addEventListener('orientationchange', () => setTimeout(resizeGame, 100));
 resizeGame(); 
 
-// =========================================
-// ⚙️ 1. 全域資料狀態
-// =========================================
 const GAME_STATE = { SELECT: 0, STORY: 1, LEVEL1: 2, LEVEL2: 3, LEVEL3: 4, LEVEL4: 5, LEVEL5: 6, ENDING: 7 };
 
 const state = {
     gameState: GAME_STATE.SELECT, coins: 0,
     playerName: '', selectedCharIndex: 0, storyPage: 0, 
-    backpack: [], pet: null, petSound: null, // 💡 儲存寵物類型與叫聲
-    
+    backpack: [], pet: null, petSound: null, 
     stamina: 5, maxStamina: 5, isStarving: false, staminaTimer: null, staminaWarned: false,
-    
     currentQuestions: [], currentQuestionIndex: 0, mistakesCurrentQuestion: 0, mistakeReviewPool: [],
     scrollX: 0, targetScrollX: 0, playerFallAngle: 0, isFalling: false, isWalking: false, walkOffset: 0,
-    
     monsterDefeated: false, wolfDefeated: false,
     monsterBaseX: 100, wolfBaseX: 20, gameOver: false,
-    
     grandpaHealed: false, endingBedX: 0, confetti: []
 };
 
@@ -277,9 +263,6 @@ const DOM = {
     msg: document.getElementById('message-area'), board: document.getElementById('question-board')
 };
 
-// =========================================
-// 🎵 2. 音效與語音引擎 (含寵物叫聲)
-// =========================================
 const AudioEngine = {
     ctx: null,
     init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); if (this.ctx.state === 'suspended') this.ctx.resume(); },
@@ -295,20 +278,24 @@ const AudioEngine = {
     howl() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(300, this.ctx.currentTime); o.frequency.linearRampToValueAtTime(600, this.ctx.currentTime+0.8); o.frequency.linearRampToValueAtTime(400, this.ctx.currentTime+2.5); g.gain.setValueAtTime(0, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.3, this.ctx.currentTime+0.5); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+2.5); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+2.5); },
     victory() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='triangle'; o.frequency.setValueAtTime(440, this.ctx.currentTime); o.frequency.setValueAtTime(554, this.ctx.currentTime + 0.1); o.frequency.setValueAtTime(659, this.ctx.currentTime + 0.2); o.frequency.setValueAtTime(880, this.ctx.currentTime + 0.3); g.gain.setValueAtTime(0.2, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime+0.8); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+0.8); },
     
-    // 💡 寵物叫聲合成
-    bark() { setTimeout(()=>this.play(300,'triangle',0.15,0.2),0); setTimeout(()=>this.play(250,'triangle',0.1,0.2),150); }, // 狗
-    meow() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(800, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime+0.4); o.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime+0.6); g.gain.setValueAtTime(0, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime+0.1); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.6); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+0.6); }, // 貓
-    tweet() { setTimeout(()=>this.play(1500,'sine',0.08,0.15),0); setTimeout(()=>this.play(1800,'sine',0.06,0.15),80); setTimeout(()=>this.play(1600,'sine',0.08,0.1),160); }, // 鳥
-    moo() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(110, this.ctx.currentTime); o.frequency.linearRampToValueAtTime(100, this.ctx.currentTime+1.5); g.gain.setValueAtTime(0, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime+0.2); g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime+1.3); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+1.5); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+1.5); }, // 牛
-    croak() { this.play(180,'sawtooth',0.2,0.15); setTimeout(()=>this.play(180,'sawtooth',0.2,0.15),250); }, // 青蛙
-    rabbitSniff() { this.play(800,'triangle',0.05,0.1); setTimeout(()=>this.play(900,'triangle',0.05,0.1),100); }, // 兔子
+    bark() { setTimeout(()=>this.play(300,'triangle',0.15,0.2),0); setTimeout(()=>this.play(250,'triangle',0.1,0.2),150); }, 
+    meow() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(800, this.ctx.currentTime); o.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime+0.4); o.frequency.exponentialRampToValueAtTime(700, this.ctx.currentTime+0.6); g.gain.setValueAtTime(0, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.15, this.ctx.currentTime+0.1); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+0.6); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+0.6); }, 
+    tweet() { setTimeout(()=>this.play(1500,'sine',0.08,0.15),0); setTimeout(()=>this.play(1800,'sine',0.06,0.15),80); setTimeout(()=>this.play(1600,'sine',0.08,0.1),160); }, 
+    moo() { this.init(); let o=this.ctx.createOscillator(), g=this.ctx.createGain(); o.type='sine'; o.frequency.setValueAtTime(110, this.ctx.currentTime); o.frequency.linearRampToValueAtTime(100, this.ctx.currentTime+1.5); g.gain.setValueAtTime(0, this.ctx.currentTime); g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime+0.2); g.gain.linearRampToValueAtTime(0.2, this.ctx.currentTime+1.3); g.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime+1.5); o.connect(g); g.connect(this.ctx.destination); o.start(); o.stop(this.ctx.currentTime+1.5); }, 
+    croak() { this.play(180,'sawtooth',0.2,0.15); setTimeout(()=>this.play(180,'sawtooth',0.2,0.15),250); }, 
+    rabbitSniff() { this.play(800,'triangle',0.05,0.1); setTimeout(()=>this.play(900,'triangle',0.05,0.1),100); }, 
 
-    speak(text, lang = 'en-US') { if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utter = new SpeechSynthesisUtterance(text); utter.lang = lang; utter.rate = 0.9; window.speechSynthesis.speak(utter); } }
+    // 💡 調整：可控制語速 (預設0.9)
+    speak(text, lang = 'en-US', rate = 0.9) { 
+        if ('speechSynthesis' in window) { 
+            window.speechSynthesis.cancel(); 
+            const utter = new SpeechSynthesisUtterance(text); 
+            utter.lang = lang; utter.rate = rate; 
+            window.speechSynthesis.speak(utter); 
+        } 
+    }
 };
 
-// =========================================
-// 🛍️ 3. 商店、背包與體力邏輯
-// =========================================
 function updateUI() {
     document.getElementById('coin-count').innerText = state.coins;
     DOM.bpBtn.innerText = `🎒 我的背包 (${state.backpack.length})`;
@@ -316,11 +303,7 @@ function updateUI() {
     document.getElementById('stamina-bars').innerText = bars;
     
     let wandBtn = document.getElementById('wand-btn');
-    if (state.backpack.some(i => i.includes('魔杖')) && (state.gameState === GAME_STATE.LEVEL2 || state.gameState === GAME_STATE.LEVEL5)) {
-        wandBtn.classList.remove('hidden');
-    } else {
-        wandBtn.classList.add('hidden');
-    }
+    if (state.backpack.some(i => i.includes('魔杖')) && (state.gameState === GAME_STATE.LEVEL2 || state.gameState === GAME_STATE.LEVEL5)) { wandBtn.classList.remove('hidden'); } else { wandBtn.classList.add('hidden'); }
 }
 
 function startStaminaDrain() {
@@ -328,13 +311,7 @@ function startStaminaDrain() {
     state.staminaTimer = setInterval(() => {
         if(state.gameState >= GAME_STATE.LEVEL1 && state.gameState < GAME_STATE.ENDING && !state.isStarving && !state.gameOver) {
             state.stamina--;
-            
-            if(state.stamina === 1 && !state.staminaWarned) {
-                state.staminaWarned = true;
-                AudioEngine.wrong();
-                document.getElementById('stamina-modal').classList.remove('hidden');
-            }
-            
+            if(state.stamina === 1 && !state.staminaWarned) { state.staminaWarned = true; AudioEngine.wrong(); document.getElementById('stamina-modal').classList.remove('hidden'); }
             if(state.stamina <= 0) { state.stamina = 0; state.isStarving = true; }
             updateUI();
         }
@@ -382,10 +359,6 @@ function triggerGameOver(msg) {
     state.gameOver = true; AudioEngine.wrong(); clearInterval(state.staminaTimer); DOM.board.style.position = 'absolute'; DOM.board.style.top = '10%'; DOM.board.style.left = '50%'; DOM.board.style.transform = 'translate(-50%, 0)'; DOM.board.style.zIndex = '100'; DOM.board.style.width = '80%'; DOM.board.innerHTML = `<div style="padding:20px;"><h1 style="color:#e74c3c; font-size: 2.5rem; margin-top:0;">💀 遊戲結束</h1><p style="font-size:1.5rem; font-weight:bold;">${msg}</p><button class="pixel-btn" onclick="location.reload()" style="margin-top:15px;">重新挑戰</button></div>`; document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
 }
 
-
-// =========================================
-// 🎨 4. 16-bit 渲染引擎 (包含朝右動物)
-// =========================================
 const C = { _:null, K:'#111', S:'#ffcc99', s:'#e6a873', R:'#d32f2f', W:'#fff', w:'#bdc3c7', B:'#3498db', b:'#2980b9', P:'#f8bbd0', p:'#f06292', H:'#5d4037', h:'#3e2723', D:'#212121', X:'#4a2e15', G:'#7f8c8d', g:'#95a5a6', E:'#e74c3c', Y:'#f1c40f', f:'#388e3c', y:'#fbc02d', k:'#8d6e63' };
 
 const sprites = [
@@ -394,19 +367,12 @@ const sprites = [
     ["....HHHH....","...HHHHHH...","..HhSSSSnH..",".HhSKSKKSnH.",".HhSSSSSSnH.",".HHHssssHHH.","..DWRWWWRD..",".DDWWRWWwDD.",".D.DDDDDD.D.","...DDDDDD...","...DDDDDD...","...DDDDDD...","...S....S...","...XX..XX...","...XX..XX..."]
 ];
 
-// 💡 重新繪製的朝右動物夥伴 (12x12)
 const petSprites = {
-    // 🐦 鳥 (朝右)
     bird: [ "....yyyy....","...yyyyyy...","..yyKKSSSy..","..yySyySyy..","..yyyyyyyy..",".RRYYYYYY...","RRYYYYYYYY..",".RYYYYYYYY..","..YYYYYYYY..","...YY..YY...","...RR..RR..." ],
-    // 🐱 貓 (朝右)
     cat: [ "K......K....","KK....KK....","KKKDDDKKK...","DKDDDDDKDK..","DDDKDKDDDD..","DDDDDDDDDD..","DwwDwwDwwD..","DDDDDDDDDD..",".DDDDDDDD...","..DD..DD....","..XX..XX...." ],
-    // 🐶 狗 (朝右)
     dog: [ "....hhhhh...","...hhhhhhh..","..hKSHHSSSh.","..hSHHHHHSh.","..hhhhhhhKh.","..SsssssSSh.","..BBBBBBSh..","..BBBBBB....","..BBBBBB....","...XX..XX...","...XX..XX..." ],
-    // 🐸 青蛙 (朝右)
     frog: [ "....ffff....","..ffffffff..",".ffWKffffWf.","fffKffffKfff","ffffffffffff","fREffffREfff","ffffffffffff","..ffffff....","..ffffff....","..ff..ff....","..ff..ff...." ],
-    // 🐰 兔子 (朝右)
     rabbit: [ "WW.....WW...","WWW...WWW...","WWWWWWWWW...","WWWWWKKWW...","WWWWWWWWW...","WWPWWWWPW...","WWWWWWWWW...",".WWWWWWW....","..WWWWWW....","...WW..WW...","...PP..PP..." ],
-    // 🐂 牛 (朝右)
     cow: [ "KK......KK..","KKKKWWKKKK..","KWWWWWWWWK..","WWWWWWWWWW..","WWKWKWWWKW..","WWWWWWWWWW..","WkWWkWWkW...","WWWWWWWW....","..WWWWWW....","..KK..KK...." ]
 };
 
@@ -438,7 +404,6 @@ function drawPlayerGame() {
     const x = 350, y = 380 - h + state.walkOffset; 
     ctx.save(); 
     
-    // 💡 繪製跟隨的寵物夥伴
     if(state.pet && !state.gameOver) { 
         const pSprite = petSprites[state.pet], pScale = 4;
         const pW = pSprite[0].length * pScale, pH = pSprite.length * pScale;
@@ -483,73 +448,152 @@ function drawPalaceBG(offset) {
     ctx.fillStyle='#c0392b'; ctx.fillRect(0,0,canvas.width,canvas.height); 
     ctx.fillStyle='#f1c40f'; for(let i=-1; i<5; i++) { let fx = i*200 - (offset*0.2)%200; ctx.fillRect(fx+50, 50, 100, 200); }
     const gY=380; ctx.fillStyle='#d35400'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#e67e22'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
+    
     let bedX = state.endingBedX - offset + 500; 
-    ctx.fillStyle = '#5c4033'; ctx.fillRect(bedX - 70, gY - 70, 60, 70); ctx.fillStyle = '#3e2723'; ctx.fillRect(bedX - 75, gY - 70, 70, 15); ctx.fillStyle = '#f1c40f'; ctx.fillRect(bedX - 45, gY - 45, 10, 10); if(!state.grandpaHealed) { ctx.font = "40px Arial"; ctx.fillText("👑", bedX - 60, gY - 75); } ctx.fillStyle = '#95a5a6'; ctx.fillRect(bedX, gY - 40, 160, 40); ctx.fillStyle = '#bdc3c7'; ctx.fillRect(bedX - 10, gY - 80, 20, 80); ctx.fillStyle = '#ecf0f1'; ctx.fillRect(bedX + 15, gY - 55, 50, 25); 
-    if(!state.grandpaHealed) { drawGrandpa(bedX + 50, gY - 25, false, -90); ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 35, gY - 45, 125, 45); } 
-    else { drawGrandpa(bedX + 60, gY, true, 0); ctx.font = "40px Arial"; ctx.fillText("👑", bedX + 37, gY - 85); ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 80, gY - 40, 80, 40); }
+    ctx.fillStyle = '#5c4033'; ctx.fillRect(bedX - 70, gY - 70, 60, 70);
+    ctx.fillStyle = '#3e2723'; ctx.fillRect(bedX - 75, gY - 70, 70, 15);
+    ctx.fillStyle = '#f1c40f'; ctx.fillRect(bedX - 45, gY - 45, 10, 10);
+    if(!state.grandpaHealed) { ctx.font = "40px Arial"; ctx.fillText("👑", bedX - 60, gY - 75); } 
+    ctx.fillStyle = '#95a5a6'; ctx.fillRect(bedX, gY - 40, 160, 40); 
+    ctx.fillStyle = '#bdc3c7'; ctx.fillRect(bedX - 10, gY - 80, 20, 80); 
+    ctx.fillStyle = '#ecf0f1'; ctx.fillRect(bedX + 15, gY - 55, 50, 25); 
+
+    if(!state.grandpaHealed) {
+        drawGrandpa(bedX + 50, gY - 25, false, -90); 
+        ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 35, gY - 45, 125, 45); 
+    } else {
+        drawGrandpa(bedX + 60, gY, true, 0); 
+        ctx.font = "40px Arial"; ctx.fillText("👑", bedX + 37, gY - 85); 
+        ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 80, gY - 40, 80, 40); 
+    }
 }
 
 function gameLoop() {
     if(state.gameState < GAME_STATE.LEVEL1) return; 
     if(state.scrollX < state.targetScrollX && !state.isStarving && !state.gameOver) { state.scrollX += 5; if(state.scrollX > state.targetScrollX) state.scrollX = state.targetScrollX; state.isWalking = true; state.walkOffset = Math.sin(Date.now()/80)*8; } 
     else { state.isWalking = false; state.walkOffset = 0; }
+    
     ctx.clearRect(0,0,canvas.width,canvas.height);
+    
     if(state.gameState === GAME_STATE.LEVEL1) { drawForestBG(state.scrollX); }
     else if(state.gameState === GAME_STATE.LEVEL2) { drawCaveBG(state.scrollX); }
     else if(state.gameState === GAME_STATE.LEVEL3) { drawIceBG(state.scrollX); }
     else if(state.gameState === GAME_STATE.LEVEL4) { drawTreasureBG(state.scrollX); }
     else if(state.gameState === GAME_STATE.LEVEL5) { drawCastleBG(state.scrollX); }
     else if(state.gameState === GAME_STATE.ENDING) { drawPalaceBG(state.scrollX); }
-    if(state.gameState === GAME_STATE.LEVEL2 && !state.monsterDefeated) { if(state.isStarving && !state.gameOver) state.monsterBaseX += 2; drawMonster(monsterSprite, 8, state.monsterDefeated, state.monsterBaseX); if(state.monsterBaseX > 300 && !state.gameOver) triggerGameOver("被石頭怪追上了！"); }
-    else if(state.gameState === GAME_STATE.LEVEL5 && !state.wolfDefeated) { if(state.isStarving && !state.gameOver) state.wolfBaseX += 3; drawMonster(wolfSprite, 14, state.wolfDefeated, state.wolfBaseX); if(state.wolfBaseX > 250 && !state.gameOver) triggerGameOver("被大野狼吃掉了！"); } 
-    drawPlayerGame(); if(state.gameState === GAME_STATE.ENDING && state.grandpaHealed) drawConfetti(); requestAnimationFrame(gameLoop);
+    
+    if(state.gameState === GAME_STATE.LEVEL2 && !state.monsterDefeated) { 
+        if(state.isStarving && !state.gameOver) state.monsterBaseX += 2;
+        drawMonster(monsterSprite, 8, state.monsterDefeated, state.monsterBaseX); 
+        if(state.monsterBaseX > 300 && !state.gameOver) triggerGameOver("被石頭怪追上了！");
+    }
+    else if(state.gameState === GAME_STATE.LEVEL5 && !state.wolfDefeated) { 
+        if(state.isStarving && !state.gameOver) state.wolfBaseX += 3;
+        drawMonster(wolfSprite, 14, state.wolfDefeated, state.wolfBaseX); 
+        if(state.wolfBaseX > 250 && !state.gameOver) triggerGameOver("被大野狼吃掉了！");
+    } 
+    
+    drawPlayerGame();
+    if(state.gameState === GAME_STATE.ENDING && state.grandpaHealed) drawConfetti();
+    requestAnimationFrame(gameLoop);
 }
 
 // =========================================
 // 🚀 5. 遊戲流程腳本
 // =========================================
-const storyPages = [ `媽媽接到電話 <span class="action-text">[☎️ 鈴鈴鈴...]</span> ，阿公生病了...<br><br>需要有人帶食物去給阿公 <span class="action-text">[😷 咳咳...]</span>。`, `我表示我可以！<br><br>媽媽將東西給我。<br><br><span class="action-text">[🎒 獲得食物與手機...]</span>`, `媽媽叮囑我路上小心 <span class="action-text">[💬 叮嚀聲...]</span>。<br><br><span class="highlight">【目標：帶食物去阿公家】</span><br>準備出發了嗎？` ];
+const storyPages = [
+    `媽媽接到電話 <span class="action-text">[☎️ 鈴鈴鈴...]</span> ，阿公生病了...<br><br>需要有人帶食物去給阿公 <span class="action-text">[😷 咳咳...]</span>。`,
+    `我表示我可以！<br><br>媽媽將東西給我。<br><br><span class="action-text">[🎒 獲得食物與手機...]</span>`,
+    `媽媽叮囑我路上小心 <span class="action-text">[💬 叮嚀聲...]</span>。<br><br><span class="highlight">【目標：帶食物去阿公家】</span><br>準備出發了嗎？`
+];
+
 DOM.cards.forEach(c => c.onclick=()=>{ DOM.cards.forEach(x=>x.classList.remove('selected')); c.classList.add('selected'); state.selectedCharIndex=parseInt(c.dataset.char); AudioEngine.play(400,'sine',0.1); });
 document.getElementById('confirm-char-btn').onclick = () => { state.playerName = document.getElementById('name-input').value||'冒險者'; DOM.sel.classList.add('hidden'); DOM.story.classList.remove('hidden'); AudioEngine.init(); renderStory(); };
+
 function renderStory() {
-    document.getElementById('story-text').innerHTML = storyPages[state.storyPage]; let f=document.getElementById('item-food'), p=document.getElementById('item-phone'); f.style.opacity='0'; f.style.top='20%'; f.style.transform='scale(1)'; p.style.opacity='0'; p.style.top='20%'; p.style.transform='scale(1)';
+    document.getElementById('story-text').innerHTML = storyPages[state.storyPage];
+    let f=document.getElementById('item-food'), p=document.getElementById('item-phone');
+    f.style.opacity='0'; f.style.top='20%'; f.style.transform='scale(1)'; p.style.opacity='0'; p.style.top='20%'; p.style.transform='scale(1)';
     if(state.storyPage===0) { setTimeout(()=>AudioEngine.phone(), 200); setTimeout(()=>AudioEngine.cough(), 1500); }
-    else if(state.storyPage===1) { setTimeout(()=>{ f.style.opacity='1'; p.style.opacity='1'; setTimeout(()=>{ f.style.top='100%'; f.style.transform='scale(0.1)'; p.style.top='100%'; p.style.transform='scale(0.1)'; AudioEngine.swish(); state.backpack=['食物🍙','手機📱']; updateUI(); setTimeout(()=>{ f.style.opacity='0'; p.style.opacity='0'; },800); },800); },300); } 
-    else { setTimeout(()=>AudioEngine.talk(),200); DOM.nextBtn.innerText="準備出發！"; }
+    else if(state.storyPage===1) {
+        setTimeout(()=>{ f.style.opacity='1'; p.style.opacity='1'; 
+            setTimeout(()=>{ f.style.top='100%'; f.style.transform='scale(0.1)'; p.style.top='100%'; p.style.transform='scale(0.1)'; AudioEngine.swish(); state.backpack=['食物🍙','手機📱']; updateUI(); setTimeout(()=>{ f.style.opacity='0'; p.style.opacity='0'; },800); },800); 
+        },300);
+    } else { setTimeout(()=>AudioEngine.talk(),200); DOM.nextBtn.innerText="準備出發！"; }
 }
 DOM.nextBtn.onclick = () => { AudioEngine.play(500,'triangle',0.1); if(state.storyPage<2) { state.storyPage++; renderStory(); } else startLevel1(); };
 document.getElementById('skip-story').onclick = () => { state.backpack=['食物🍙','手機📱']; updateUI(); startLevel1(); };
+
 function handleAns(sel, cor, btnEl, nextFn) {
-    if(state.gameOver) return; if(state.isStarving) { alert("太餓了，請打開背包吃東西補充體力！"); return; } if(state.isFalling) return; document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
-    if(sel === cor) { AudioEngine.correct(); if(state.gameState === GAME_STATE.LEVEL2 || state.gameState === GAME_STATE.LEVEL5) AudioEngine.monsterHit(); btnEl.style.backgroundColor = '#2ecc71'; state.coins+=10; updateUI(); state.targetScrollX+=300; state.currentQuestionIndex++; setTimeout(nextFn, 800); } 
-    else { AudioEngine.wrong(); btnEl.style.backgroundColor = '#e74c3c'; state.mistakesCurrentQuestion++; triggerFall(); if(state.mistakesCurrentQuestion >= 3) { setTimeout(()=>{ if(!state.currentQuestions[state.currentQuestionIndex].isReview) state.mistakeReviewPool.push(state.currentQuestions[state.currentQuestionIndex]); state.targetScrollX+=300; state.currentQuestionIndex++; nextFn(); }, 1200); } else { setTimeout(() => { document.querySelectorAll('.option-btn').forEach(b => { b.disabled = false; if(b.innerText !== sel) b.style.backgroundColor = '#f1c40f'; }); }, 800); } }
+    if(state.gameOver) return;
+    if(state.isStarving) { alert("太餓了，請打開背包吃東西補充體力！"); return; }
+    if(state.isFalling) return; 
+    document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+    
+    if(sel === cor) {
+        AudioEngine.correct(); if(state.gameState === GAME_STATE.LEVEL2 || state.gameState === GAME_STATE.LEVEL5) AudioEngine.monsterHit(); 
+        btnEl.style.backgroundColor = '#2ecc71'; state.coins+=10; updateUI();
+        state.targetScrollX+=300; state.currentQuestionIndex++; setTimeout(nextFn, 800);
+    } else {
+        AudioEngine.wrong(); btnEl.style.backgroundColor = '#e74c3c'; state.mistakesCurrentQuestion++; triggerFall();
+        if(state.mistakesCurrentQuestion >= 3) {
+            setTimeout(()=>{ if(!state.currentQuestions[state.currentQuestionIndex].isReview) state.mistakeReviewPool.push(state.currentQuestions[state.currentQuestionIndex]); state.targetScrollX+=300; state.currentQuestionIndex++; nextFn(); }, 1200);
+        } else { setTimeout(() => { document.querySelectorAll('.option-btn').forEach(b => { b.disabled = false; if(b.innerText !== sel) b.style.backgroundColor = '#f1c40f'; }); }, 800); }
+    }
 }
 
 // L1 森林
 function startLevel1() {
-    DOM.story.classList.add('hidden'); DOM.game.classList.remove('hidden'); state.gameState = GAME_STATE.LEVEL1; state.currentQuestionIndex = 0; startStaminaDrain(); const allLetters = "abcdefghijklmnopqrstuvwxyz".split(''); const numQ = Math.floor(Math.random() * 3) + 3; const selected = allLetters.sort(() => 0.5 - Math.random()).slice(0, numQ);
-    state.currentQuestions = selected.map(L => { let isTargetUpper = Math.random() > 0.5; let target = isTargetUpper ? L.toUpperCase() : L.toLowerCase(), ans = isTargetUpper ? L.toLowerCase() : L.toUpperCase(); let opts = [ans]; while(opts.length < 3) { let r = String.fromCharCode((isTargetUpper ? 97 : 65) + Math.floor(Math.random() * 26)); if(!opts.includes(r) && r !== ans) opts.push(r); } return { target: target, answer: ans, options: opts.sort(() => Math.random() - 0.5) }; });
-    setTimeout(() => { let h = document.getElementById('player-progress-head'), n0 = document.getElementById('node-0'); h.style.left = n0.offsetLeft + (n0.offsetWidth/2) + 'px'; updateUI(); }, 100); renderLevel1(); gameLoop();
+    DOM.story.classList.add('hidden'); DOM.game.classList.remove('hidden'); state.gameState = GAME_STATE.LEVEL1; state.currentQuestionIndex = 0; startStaminaDrain(); 
+    const allLetters = "abcdefghijklmnopqrstuvwxyz".split(''); const numQ = Math.floor(Math.random() * 3) + 3; 
+    const selected = allLetters.sort(() => 0.5 - Math.random()).slice(0, numQ);
+    state.currentQuestions = selected.map(L => { 
+        let isTargetUpper = Math.random() > 0.5; let target = isTargetUpper ? L.toUpperCase() : L.toLowerCase(), ans = isTargetUpper ? L.toLowerCase() : L.toUpperCase(); 
+        let opts = [ans]; while(opts.length < 3) { let r = String.fromCharCode((isTargetUpper ? 97 : 65) + Math.floor(Math.random() * 26)); if(!opts.includes(r) && r !== ans) opts.push(r); } 
+        return { target: target, answer: ans, options: opts.sort(() => Math.random() - 0.5) }; 
+    });
+    setTimeout(() => { let h = document.getElementById('player-progress-head'), n0 = document.getElementById('node-0'); h.style.left = n0.offsetLeft + (n0.offsetWidth/2) + 'px'; updateUI(); }, 100);
+    renderLevel1(); gameLoop();
 }
+
 function renderLevel1() {
-    if(state.currentQuestionIndex >= state.currentQuestions.length) { DOM.board.innerHTML = `<div style="padding:20px;"><h2>🎉 森林通關！</h2></div>`; document.getElementById('node-0').classList.add('completed'); let h = document.getElementById('player-progress-head'), n1 = document.getElementById('node-1'); h.style.left = n1.offsetLeft + (n1.offsetWidth/2) + 'px'; state.targetScrollX+=300; setTimeout(startLevel2, 3000); return; }
-    const q = state.currentQuestions[state.currentQuestionIndex]; DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🌲 第 1 關：森林字母傳送門</div><div style="font-size:4.5rem; color:#c0392b; font-weight:bold; text-shadow:3px 3px #fff; margin:10px 0;">${q.target}</div><div class="options-container" id="options"></div>`; DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0; q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel1); DOM.opts.appendChild(btn); });
+    if(state.currentQuestionIndex >= state.currentQuestions.length) {
+        DOM.board.innerHTML = `<div style="padding:20px;"><h2>🎉 森林通關！</h2></div>`; document.getElementById('node-0').classList.add('completed'); let h = document.getElementById('player-progress-head'), n1 = document.getElementById('node-1'); h.style.left = n1.offsetLeft + (n1.offsetWidth/2) + 'px'; state.targetScrollX+=300; setTimeout(startLevel2, 3000); return;
+    }
+    const q = state.currentQuestions[state.currentQuestionIndex];
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🌲 第 1 關：森林字母傳送門</div><div style="font-size:4.5rem; color:#c0392b; font-weight:bold; text-shadow:3px 3px #fff; margin:10px 0;">${q.target}</div><div class="options-container" id="options"></div>`;
+    DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0;
+    q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel1); DOM.opts.appendChild(btn); });
 }
 
 // L2 洞穴
-const L2_VERBS = [ {e:"dance", z:"跳舞"}, {e:"sing", z:"唱歌"}, {e:"ride a bike", z:"騎車"} ]; const L2_NOUNS = [ {e:"dog", z:"狗"}, {e:"cat", z:"貓"}, {e:"bird", z:"鳥"} ];
+const L2_VERBS = [ {e:"dance", z:"跳舞"}, {e:"sing", z:"唱歌"}, {e:"ride a bike", z:"騎車"} ];
+const L2_NOUNS = [ {e:"dog", z:"狗"}, {e:"cat", z:"貓"}, {e:"bird", z:"鳥"} ];
 function startLevel2() {
-    state.gameState = GAME_STATE.LEVEL2; state.currentQuestionIndex = 0; state.monsterDefeated = false; updateUI(); let qs = []; const numQ = Math.floor(Math.random() * 3) + 3;
-    for(let i=0; i<numQ; i++) { let isVerb = Math.random() > 0.5, isEnToZh = Math.random() > 0.5, qText, aText, opts = []; if(isVerb) { let v = [...L2_VERBS].sort(()=>0.5-Math.random()).slice(0,3); if(isEnToZh) { qText = `Can you ${v[0].e}?`; aText = `你會${v[0].z}嗎？`; opts = [aText, `你會${v[1].z}嗎？`, `你會${v[2].z}嗎？`]; } else { qText = `你會${v[0].z}嗎？`; aText = `Can you ${v[0].e}?`; opts = [aText, `Can you ${v[1].e}?`, `Can you ${v[2].e}?`]; } } else { let n = [...L2_NOUNS].sort(()=>0.5-Math.random()).slice(0,3), isThis = Math.random() > 0.5, ep = isThis?"this":"that", zp = isThis?"這":"那"; if(isEnToZh) { qText = `Is ${ep} a ${n[0].e}?`; aText = `${zp}是${n[0].z}嗎？`; opts = [aText, `${zp}是${n[1].z}嗎？`, `${zp}是${n[2].z}嗎？`]; } else { qText = `${zp}是${n[0].z}嗎？`; aText = `Is ${ep} a ${n[0].e}?`; opts = [aText, `Is ${ep} a ${n[1].e}?`, `Is ${ep} a ${n[2].e}?`]; } } qs.push({ target: qText, answer: aText, options: opts.sort(()=>0.5-Math.random()) }); }
-    state.currentQuestions = qs; state.targetScrollX += 800; DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🦇 第 2 關：咒語翻譯官</div><div style="font-size:1.2rem; color:#e74c3c; font-weight: bold; margin: 10px 0;">走入洞穴突然跳出石頭怪，在後面追趕玩家！</div>`; setTimeout(renderLevel2, 2500);
+    state.gameState = GAME_STATE.LEVEL2; state.currentQuestionIndex = 0; state.monsterDefeated = false; updateUI(); 
+    let qs = []; const numQ = Math.floor(Math.random() * 3) + 3;
+    for(let i=0; i<numQ; i++) {
+        let isVerb = Math.random() > 0.5, isEnToZh = Math.random() > 0.5, qText, aText, opts = [];
+        if(isVerb) { let v = [...L2_VERBS].sort(()=>0.5-Math.random()).slice(0,3); if(isEnToZh) { qText = `Can you ${v[0].e}?`; aText = `你會${v[0].z}嗎？`; opts = [aText, `你會${v[1].z}嗎？`, `你會${v[2].z}嗎？`]; } else { qText = `你會${v[0].z}嗎？`; aText = `Can you ${v[0].e}?`; opts = [aText, `Can you ${v[1].e}?`, `Can you ${v[2].e}?`]; } } 
+        else { let n = [...L2_NOUNS].sort(()=>0.5-Math.random()).slice(0,3), isThis = Math.random() > 0.5, ep = isThis?"this":"that", zp = isThis?"這":"那"; if(isEnToZh) { qText = `Is ${ep} a ${n[0].e}?`; aText = `${zp}是${n[0].z}嗎？`; opts = [aText, `${zp}是${n[1].z}嗎？`, `${zp}是${n[2].z}嗎？`]; } else { qText = `${zp}是${n[0].z}嗎？`; aText = `Is ${ep} a ${n[0].e}?`; opts = [aText, `Is ${ep} a ${n[1].e}?`, `Is ${ep} a ${n[2].e}?`]; } }
+        qs.push({ target: qText, answer: aText, options: opts.sort(()=>0.5-Math.random()) });
+    }
+    state.currentQuestions = qs; state.targetScrollX += 800; 
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🦇 第 2 關：咒語翻譯官</div><div style="font-size:1.2rem; color:#e74c3c; font-weight: bold; margin: 10px 0;">走入洞穴突然跳出石頭怪，在後面追趕玩家！</div>`;
+    setTimeout(renderLevel2, 2500);
 }
 function renderLevel2() {
-    if(state.currentQuestionIndex >= state.currentQuestions.length) { state.monsterDefeated = true; DOM.board.innerHTML = `<div style="padding:20px;"><h2>🎉 甩掉石頭怪了！</h2></div>`; document.getElementById('node-1').classList.add('completed'); let h = document.getElementById('player-progress-head'), n2 = document.getElementById('node-2'); h.style.left = n2.offsetLeft + (n2.offsetWidth/2) + 'px'; state.targetScrollX += 500; setTimeout(startLevel3, 3000); return; }
-    const q = state.currentQuestions[state.currentQuestionIndex]; DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🦇 第 2 關：咒語翻譯官</div><div style="font-size:2.5rem; color:#f1c40f; font-weight: bold; text-shadow:2px 2px #000; margin: 10px 0;">${q.target}</div><div class="options-container" id="options"></div>`; DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0; const isEnglish = /[a-zA-Z]/.test(q.target); AudioEngine.speak(q.target, isEnglish ? 'en-US' : 'zh-TW'); q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.style.fontSize = '1.5rem'; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel2); DOM.opts.appendChild(btn); });
+    if(state.currentQuestionIndex >= state.currentQuestions.length) {
+        state.monsterDefeated = true; DOM.board.innerHTML = `<div style="padding:20px;"><h2>🎉 甩掉石頭怪了！</h2></div>`; document.getElementById('node-1').classList.add('completed'); let h = document.getElementById('player-progress-head'), n2 = document.getElementById('node-2'); h.style.left = n2.offsetLeft + (n2.offsetWidth/2) + 'px'; state.targetScrollX += 500; setTimeout(startLevel3, 3000); return; 
+    }
+    const q = state.currentQuestions[state.currentQuestionIndex];
+    DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 10px;">🦇 第 2 關：咒語翻譯官</div><div style="font-size:2.5rem; color:#f1c40f; font-weight: bold; text-shadow:2px 2px #000; margin: 10px 0;">${q.target}</div><div class="options-container" id="options"></div>`;
+    DOM.opts = document.getElementById('options'); state.mistakesCurrentQuestion = 0;
+    const isEnglish = /[a-zA-Z]/.test(q.target); AudioEngine.speak(q.target, isEnglish ? 'en-US' : 'zh-TW');
+    q.options.forEach(opt => { let btn = document.createElement('button'); btn.className = 'option-btn'; btn.innerText = opt; btn.style.fontSize = '1.5rem'; btn.onclick = (e) => handleAns(opt, q.answer, e.target, renderLevel2); DOM.opts.appendChild(btn); });
 }
 
-// 💡 L3 冰山拼圖 (更新動物與朝向)
-// 青蛙:🐸, 兔子:🐰, 牛:🐮
+// L3 冰山拼圖
 const L3_ANIMALS = [ { type: "bird", z: "鳥", emo: "🐦", sound: 'tweet' }, { type: "cat", z: "貓", emo: "🐱", sound: 'meow' }, { type: "dog", z: "狗", emo: "🐶", sound: 'bark' }, { type: "frog", z: "青蛙", emo: "🐸", sound: 'croak' }, { type: "rabbit", z: "兔子", emo: "🐰", sound: 'rabbitSniff' }, { type: "cow", z: "牛", emo: "🐮", sound: 'moo' } ];
 let l3_data = { animals: [], current: 0, pieces: [], board: [null,null,null,null], selectedIdx: null };
 function startLevel3() { state.gameState = GAME_STATE.LEVEL3; l3_data.animals = [...L3_ANIMALS].sort(()=>0.5-Math.random()).slice(0, 3); l3_data.current = 0; state.targetScrollX += 800; updateUI(); setTimeout(renderL3Puzzle, 1000); }
@@ -562,11 +606,10 @@ window.handleL3SlotClick = function(slot) {
     if (l3_data.board[slot] !== null) { let pId = l3_data.board[slot]; let idx = l3_data.pieces.indexOf(pId); document.getElementById(`piece-${idx}`).style.visibility = 'visible'; l3_data.board[slot] = null; document.querySelector(`[data-slot="${slot}"]`).style.backgroundImage = 'none'; AudioEngine.play(300, 'sine', 0.1); } 
     else if (l3_data.selectedIdx !== null) { l3_data.board[slot] = l3_data.pieces[l3_data.selectedIdx]; const slotEl = document.querySelector(`[data-slot="${slot}"]`), pieceCvs = document.getElementById(`piece-${l3_data.selectedIdx}`); slotEl.style.backgroundImage = `url(${pieceCvs.toDataURL()})`; pieceCvs.style.visibility = 'hidden'; document.querySelectorAll('.p-piece').forEach(p=>p.style.borderColor = '#bdc3c7'); l3_data.selectedIdx = null; AudioEngine.play(600, 'triangle', 0.1); checkL3Win(); }
 }
-// 💡 選擇寵物並播放叫聲
 window.selectPet = function(idx) { 
     const petData = l3_data.animals[idx];
     state.pet = petData.type; state.petSound = petData.sound;
-    if(AudioEngine[state.petSound]) AudioEngine[state.petSound](); // 播放叫聲
+    if(AudioEngine[state.petSound]) AudioEngine[state.petSound](); 
     AudioEngine.correct(); DOM.board.innerHTML = `<div style="padding:20px;"><h2>太棒了！${petData.z} ${petData.emo} 成為夥伴！</h2></div>`; document.getElementById('node-2').classList.add('completed'); let h = document.getElementById('player-progress-head'), n3 = document.getElementById('node-3'); h.style.left = n3.offsetLeft + (n3.offsetWidth/2) + 'px'; state.targetScrollX += 400; setTimeout(startLevel4, 3000); 
 }
 function checkL3Win() {
@@ -580,14 +623,9 @@ function checkL3Win() {
 function renderL3Puzzle() {
     l3_data.board = [null, null, null, null]; l3_data.selectedIdx = null; l3_data.pieces = [0, 1, 2, 3].sort(()=>0.5-Math.random()); 
     DOM.board.innerHTML = `<div style="font-size: 1.2rem; font-weight:bold; color:#2c3e50; margin-bottom: 5px;">❄️ 幻獸圖鑑 (${l3_data.current + 1}/3) - ${l3_data.animals[l3_data.current].z}</div><div style="display:flex; gap: 20px; justify-content: center; align-items: center; margin-top: 5px;"><div style="display:grid; grid-template-columns: 70px 70px; grid-template-rows: 70px 70px; gap: 2px; background:#34495e; padding:4px; border-radius:4px;">${[0,1,2,3].map(i => `<div class="p-slot" data-slot="${i}" style="width:70px; height:70px; background:#7f8c8d; cursor:pointer; background-size:cover;" onclick="handleL3SlotClick(${i})"></div>`).join('')}</div><div style="display:flex; flex-wrap:wrap; width: 150px; gap: 8px; justify-content: center;">${l3_data.pieces.map((pId, idx) => `<canvas class="p-piece" id="piece-${idx}" data-idx="${idx}" data-pid="${pId}" width="70" height="70" style="border: 4px solid #bdc3c7; border-radius: 4px; cursor:pointer; background:#ecf0f1; box-sizing:border-box;" onclick="handleL3PieceClick(${idx})"></canvas>`).join('')}</div></div>`;
-    
-    // 💡 使用朝右的畫素動物圖
     const tempCvs = document.createElement('canvas'); tempCvs.width=140; tempCvs.height=140; const tempCtx = tempCvs.getContext('2d');
-    const pSprite = petSprites[l3_data.animals[l3_data.current].type], scale=10; 
-    const sW=pSprite[0].length, sH=pSprite.length;
-    const ox = (140-sW*scale)/2, oy=(140-sH*scale)/2;
+    const pSprite = petSprites[l3_data.animals[l3_data.current].type], scale=10; const sW=pSprite[0].length, sH=pSprite.length; const ox = (140-sW*scale)/2, oy=(140-sH*scale)/2;
     for(let r=0; r<sH; r++) { for(let c=0; c<sW; c++) { if(C[pSprite[r][c]]) { tempCtx.fillStyle=C[pSprite[r][c]]; tempCtx.fillRect(ox+c*scale,oy+r*scale,scale,scale); } } }
-    
     const coords = [ {x:0, y:0}, {x:70, y:0}, {x:0, y:70}, {x:70, y:70} ]; l3_data.pieces.forEach((pId, idx) => { document.getElementById(`piece-${idx}`).getContext('2d').drawImage(tempCvs, coords[pId].x, coords[pId].y, 70, 70, 0, 0, 70, 70); });
 }
 
@@ -615,13 +653,30 @@ function checkL4Win() { if(l4_data.matched.length === l4_data.left.length) { sta
 // L4 電話密碼
 let phoneData = { pass: [], input: [], keys: [] };
 function initPhoneEvent() {
-    AudioEngine.phone(); const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"; phoneData.pass = []; for(let i=0; i<5; i++) phoneData.pass.push(chars[Math.floor(Math.random()*chars.length)]); phoneData.input = []; let options = [...phoneData.pass]; while(options.length < 10) { let c = chars[Math.floor(Math.random()*chars.length)]; if(!options.includes(c)) options.push(c); } phoneData.keys = options.sort(() => Math.random() - 0.5);
-    document.getElementById('phone-display').innerText = "_ _ _ _ _"; document.getElementById('phone-keypad').innerHTML = phoneData.keys.map(k => `<button class="phone-key" onclick="handlePhoneKey('${k}')">${k}</button>`).join(''); document.getElementById('phone-modal').classList.remove('hidden');
+    AudioEngine.phone(); 
+    
+    // 💡 優化：選出 10 個不重複的基本字母，然後隨機分配大小寫
+    const baseChars = "abcdefghijklmnopqrstuvwxyz".split(''); 
+    const selectedBases = baseChars.sort(() => 0.5 - Math.random()).slice(0, 10);
+    let options = selectedBases.map(c => Math.random() > 0.5 ? c.toUpperCase() : c);
+    
+    phoneData.pass = [...options].sort(() => 0.5 - Math.random()).slice(0, 5); 
+    phoneData.input = []; 
+    phoneData.keys = options.sort(() => Math.random() - 0.5);
+    
+    document.getElementById('phone-display').innerText = "_ _ _ _ _"; 
+    document.getElementById('phone-keypad').innerHTML = phoneData.keys.map(k => `<button class="phone-key" onclick="handlePhoneKey('${k}')">${k}</button>`).join(''); 
+    document.getElementById('phone-modal').classList.remove('hidden');
 }
-window.playPhonePassword = function() { AudioEngine.speak(phoneData.pass.join(", "), 'en-US'); }
+
+// 💡 調整：語速變慢 (0.4)
+window.playPhonePassword = function() { AudioEngine.speak(phoneData.pass.join(", "), 'en-US', 0.4); }
+
 window.handlePhoneKey = function(k) {
     let nextExpected = phoneData.pass[phoneData.input.length];
-    if(k === nextExpected) { AudioEngine.correct(); phoneData.input.push(k); document.getElementById('phone-display').innerText = phoneData.input.join(' ') + ' _'.repeat(5 - phoneData.input.length); if(phoneData.input.length === 5) { setTimeout(() => { document.getElementById('phone-modal').classList.add('hidden'); showMomMessage(); }, 500); } } 
+    if(k === nextExpected) {
+        AudioEngine.correct(); phoneData.input.push(k); document.getElementById('phone-display').innerText = phoneData.input.join(' ') + ' _'.repeat(5 - phoneData.input.length); if(phoneData.input.length === 5) { setTimeout(() => { document.getElementById('phone-modal').classList.add('hidden'); showMomMessage(); }, 500); } 
+    } 
     else { AudioEngine.wrong(); phoneData.input = []; document.getElementById('phone-display').innerText = "_ _ _ _ _"; let box = document.getElementById('phone-display'); box.style.animation = "shake 0.4s"; setTimeout(()=> box.style.animation = "", 400); }
 }
 function showMomMessage() { DOM.board.innerHTML = `<div style="padding:20px;"><h2 style="color:#e74c3c;">📞 媽媽來電</h2><p style="font-size:1.2rem; font-weight:bold;">「你到哪了？要趕快去找阿公，不要亂跑喔！」</p><button class="pixel-btn" onclick="startLevel5()" style="margin-top:15px;">我知道了！</button></div>`; document.getElementById('node-3').classList.add('completed'); let h = document.getElementById('player-progress-head'), n4 = document.getElementById('node-4'); h.style.left = n4.offsetLeft + (n4.offsetWidth/2) + 'px'; state.targetScrollX += 400; }

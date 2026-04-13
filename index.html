@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>公主歷險記 v4.5 - 溫馨大結局版</title>
+<title>公主歷險記 v4.6 - 終極排版修復版</title>
 <style>
     /* =========================================
        🎨 1. 全域與 UI 樣式設定
@@ -197,8 +197,7 @@
 
 <script>
 /**
- * 公主歷險記 - 溫馨大結局版 v4.5 (Dustine)
- * 特色：阿公生動像素圖、皇冠特效、重新玩按鈕
+ * 公主歷險記 - 終極排版修復版 v4.6 (Dustine)
  */
 
 // =========================================
@@ -227,7 +226,7 @@ const DOM = {
 };
 
 // =========================================
-// 🎵 2. 音效引擎
+// 🎵 2. 音效與語音引擎
 // =========================================
 const AudioEngine = {
     ctx: null,
@@ -250,23 +249,30 @@ const AudioEngine = {
 // 🛍️ 3. 商店、背包與體力邏輯
 // =========================================
 function updateUI() {
-    document.getElementById('coin-count').innerText = state.coins; DOM.bpBtn.innerText = `🎒 我的背包 (${state.backpack.length})`;
-    document.getElementById('stamina-bars').innerText = "🟩".repeat(state.stamina) + "⬜".repeat(5 - state.stamina);
+    document.getElementById('coin-count').innerText = state.coins;
+    DOM.bpBtn.innerText = `🎒 我的背包 (${state.backpack.length})`;
+    let bars = "🟩".repeat(state.stamina) + "⬜".repeat(5 - state.stamina);
+    document.getElementById('stamina-bars').innerText = bars;
 }
+
 function startStaminaDrain() {
     if(state.staminaTimer) clearInterval(state.staminaTimer);
     state.staminaTimer = setInterval(() => {
         if(state.gameState >= GAME_STATE.LEVEL1 && state.gameState < GAME_STATE.ENDING && !state.isStarving) {
-            state.stamina--; if(state.stamina <= 0) { state.stamina = 0; state.isStarving = true; } updateUI();
+            state.stamina--;
+            if(state.stamina <= 0) { state.stamina = 0; state.isStarving = true; }
+            updateUI();
         }
     }, 15000);
 }
+
 function openShop() { if(state.gameState < GAME_STATE.LEVEL1) return; AudioEngine.play(400, 'sine', 0.1); document.getElementById('shop-coin-display').innerText = state.coins; document.getElementById('shop-modal').classList.remove('hidden'); }
 function closeShop() { document.getElementById('shop-modal').classList.add('hidden'); }
 function buyItem(itemName, cost) {
     if (state.coins >= cost) { state.coins -= cost; state.backpack.push(itemName); updateUI(); document.getElementById('shop-coin-display').innerText = state.coins; AudioEngine.correct(); alert(`成功購買 ${itemName}！`); } 
     else { AudioEngine.wrong(); alert("金幣不夠喔！快去闖關賺錢吧！"); }
 }
+
 function openBackpack() {
     if(state.gameState < GAME_STATE.LEVEL1) return; AudioEngine.play(300, 'sine', 0.1);
     const grid = document.getElementById('backpack-grid');
@@ -287,9 +293,8 @@ window.useItem = function(index) {
 }
 
 // =========================================
-// 🎨 4. 16-bit 渲染引擎 (新增阿公像素圖)
+// 🎨 4. 16-bit 渲染引擎 (包含阿公動畫)
 // =========================================
-// Y: 阿公黃衣
 const C = { _:null, K:'#111', S:'#ffcc99', s:'#e6a873', R:'#d32f2f', W:'#fff', w:'#bdc3c7', B:'#3498db', b:'#2980b9', P:'#f8bbd0', p:'#f06292', H:'#5d4037', h:'#3e2723', D:'#212121', X:'#4a2e15', G:'#7f8c8d', g:'#95a5a6', E:'#e74c3c', Y:'#f1c40f' };
 
 const sprites = [
@@ -300,8 +305,9 @@ const sprites = [
 const monsterSprite = [ "....GGGG....","..GGggggGG..",".GggEeggEG.",".GggggggggG.",".GGGGGGGGGG.","GggggggggggG","GGGGGGGGGGGG","..GG....GG.." ];
 const wolfSprite = [ "....KKKK....","...KEEEEK...","..KKTKTKK...",".KKKKKKKK...","KKKKKKKKKKK.","KkKKkKKkKKKK","KKKKKKKKKKKK","..KK....KK.." ];
 
-// 💡 繪製阿公的像素圖
+// 阿公生病(灰髮黃衣)
 const grandpaSprite = [ "....wwww....","...wwwwww...","..wSSSSSSw..","..ShSSShSw..","..wSSSSSSw..","...wssssw...","..YYYYYYYY..",".YYYYYYYYYY.",".YYYYYYYYYY.",".YYYYYYYYYY.","..YYYYYYYY..","...DDDDDD...","...DDDDDD...","...XX..XX...","...XX..XX..." ];
+// 阿公康復笑(灰髮黃衣笑臉)
 const grandpaSmileSprite = [ "....wwww....","...wwwwww...","..wSSSSSSw..","..SKSKKSKS..","..wSSSSSSw..","...wRRRRw...","..YYYYYYYY..",".YYYYYYYYYY.",".YYYYYYYYYY.",".YYYYYYYYYY.","..YYYYYYYY..","...DDDDDD...","...DDDDDD...","...XX..XX...","...XX..XX..." ];
 
 function drawChar(cvsId, idx, scale) {
@@ -358,33 +364,27 @@ function drawIceBG(offset) { ctx.fillStyle='#a0c4ff'; ctx.fillRect(0,0,canvas.wi
 function drawTreasureBG(offset) { ctx.fillStyle='#1e272e'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.strokeStyle='#2f3640'; ctx.lineWidth=2; for(let i=0; i<10; i++) { ctx.beginPath(); ctx.moveTo(0, i*60); ctx.lineTo(800, i*60); ctx.stroke(); for(let j=0; j<10; j++) { let x = j*120 + (i%2)*60 - (offset*0.1)%120; ctx.beginPath(); ctx.moveTo(x, i*60); ctx.lineTo(x, i*60+60); ctx.stroke(); } } const gY=380; ctx.fillStyle='#2f3640'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#111'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY); }
 function drawCastleBG(offset) { ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#2c3e50'; for(let i=-2; i<6; i++) { let fx = i*150 - (offset*0.5)%150; ctx.fillRect(fx, 100, 100, 300); ctx.fillRect(fx+20, 60, 60, 40); } const gY=380; ctx.fillStyle='#34495e'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#2c3e50'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY); }
 
-// 💡 繪製阿公與床 (大結局)
 function drawPalaceBG(offset) {
     ctx.fillStyle='#c0392b'; ctx.fillRect(0,0,canvas.width,canvas.height); 
     ctx.fillStyle='#f1c40f'; for(let i=-1; i<5; i++) { let fx = i*200 - (offset*0.2)%200; ctx.fillRect(fx+50, 50, 100, 200); }
     const gY=380; ctx.fillStyle='#d35400'; ctx.fillRect(0,gY,canvas.width,20); ctx.fillStyle='#e67e22'; ctx.fillRect(0,gY+20,canvas.width,canvas.height-gY);
     
     let bedX = state.endingBedX - offset + 500; 
-
-    // 床頭櫃
     ctx.fillStyle = '#5c4033'; ctx.fillRect(bedX - 70, gY - 70, 60, 70);
     ctx.fillStyle = '#3e2723'; ctx.fillRect(bedX - 75, gY - 70, 70, 15);
     ctx.fillStyle = '#f1c40f'; ctx.fillRect(bedX - 45, gY - 45, 10, 10);
-    if(!state.grandpaHealed) { ctx.font = "40px Arial"; ctx.fillText("👑", bedX - 60, gY - 75); } // 放在床頭櫃
+    if(!state.grandpaHealed) { ctx.font = "40px Arial"; ctx.fillText("👑", bedX - 60, gY - 75); } 
+    ctx.fillStyle = '#95a5a6'; ctx.fillRect(bedX, gY - 40, 160, 40); 
+    ctx.fillStyle = '#bdc3c7'; ctx.fillRect(bedX - 10, gY - 80, 20, 80); 
+    ctx.fillStyle = '#ecf0f1'; ctx.fillRect(bedX + 15, gY - 55, 50, 25); 
 
-    // 床
-    ctx.fillStyle = '#95a5a6'; ctx.fillRect(bedX, gY - 40, 160, 40); // 床架
-    ctx.fillStyle = '#bdc3c7'; ctx.fillRect(bedX - 10, gY - 80, 20, 80); // 床頭板
-    ctx.fillStyle = '#ecf0f1'; ctx.fillRect(bedX + 15, gY - 55, 50, 25); // 枕頭
-
-    // 阿公
     if(!state.grandpaHealed) {
-        drawGrandpa(bedX + 50, gY - 25, false, -90); // 躺著
-        ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 35, gY - 45, 125, 45); // 蓋被子
+        drawGrandpa(bedX + 50, gY - 25, false, -90); 
+        ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 35, gY - 45, 125, 45); 
     } else {
-        drawGrandpa(bedX + 60, gY, true, 0); // 坐起來笑
-        ctx.font = "40px Arial"; ctx.fillText("👑", bedX + 37, gY - 85); // 戴皇冠
-        ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 80, gY - 40, 80, 40); // 掀被子
+        drawGrandpa(bedX + 60, gY, true, 0); 
+        ctx.font = "40px Arial"; ctx.fillText("👑", bedX + 37, gY - 85); 
+        ctx.fillStyle = '#3498db'; ctx.fillRect(bedX + 80, gY - 40, 80, 40); 
     }
 }
 
@@ -411,7 +411,7 @@ function gameLoop() {
 }
 
 // =========================================
-// 🚀 5. 遊戲流程腳本
+// 🚀 5. 遊戲流程腳本 (含防呆)
 // =========================================
 const storyPages = [
     `媽媽接到電話 <span class="action-text">[☎️ 鈴鈴鈴...]</span> ，阿公生病了...<br><br>需要有人帶食物去給阿公 <span class="action-text">[😷 咳咳...]</span>。`,
@@ -541,7 +541,7 @@ function renderL3Puzzle() {
 }
 
 // =========================================
-// 📜 8. 第 4 關：魔法卷軸
+// 📜 8. 第 4 關：魔法卷軸 (等比例縮小與黑字修復)
 // =========================================
 const L4_ITEMS = [ { word: "hen", emo: "🐔" }, { word: "pen", emo: "🖊️" }, { word: "net", emo: "🕸️" }, { word: "dog", emo: "🐶" }, { word: "cat", emo: "🐱" } ];
 let l4_data = { left: [], right: [], selected: null, matched: [] };
@@ -549,9 +549,25 @@ function startLevel4() {
     state.gameState = GAME_STATE.LEVEL4; let items = [...L4_ITEMS].sort(()=>0.5-Math.random()).slice(0, 5); l4_data.left = [...items].sort(()=>0.5-Math.random()); l4_data.right = [...items].sort(()=>0.5-Math.random()); l4_data.selected = null; l4_data.matched = []; state.targetScrollX += 800; 
     DOM.board.innerHTML = `<div style="font-size: 1.4rem; font-weight:bold; color:#2c3e50; margin-bottom: 20px;">📦 發現一個古老的寶箱！</div><div style="font-size: 6rem; cursor:pointer;" onclick="openChest(this)">🧰</div><div style="color:#7f8c8d; margin-top:10px; font-weight:bold;">(點擊打開)</div>`;
 }
-window.openChest = function(el) { if(state.isStarving) { alert("太餓了，玩家必須到商店買食物，並點開背包吃東西。"); return; } AudioEngine.play(300, 'square', 0.2); el.innerText = "📜"; setTimeout(renderL4Scroll, 800); }
+window.openChest = function(el) { 
+    if(state.isStarving) { alert("太餓了，玩家必須到商店買食物，並點開背包吃東西。"); return; }
+    AudioEngine.play(300, 'square', 0.2); el.innerText = "📜"; setTimeout(renderL4Scroll, 800); 
+}
 function renderL4Scroll() {
-    DOM.board.innerHTML = `<div style="font-size: 1.2rem; font-weight:bold; color:#2c3e50; margin-bottom: 5px;">📜 魔法卷軸：記憶連結</div><div id="l4-container" style="position: relative; background: #f39c12; padding: 15px; border-radius: 8px; border: 6px solid #d35400; display:flex; justify-content: space-between; width: 380px; margin: 0 auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.3);"><svg id="l4-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;"></svg><div style="display:flex; flex-direction:column; gap:10px; z-index:2;">${l4_data.left.map((item, idx) => `<div id="l4-word-${idx}" style="background:#ecf0f1; border:4px solid #34495e; border-radius:4px; padding:5px 10px; font-size:1.2rem; font-weight:bold; color:#000000; cursor:pointer; width:60px; text-align:center; transition:0.2s;" onclick="handleL4Click('word', ${idx}, '${item.word}')">${item.word}</div>`).join('')}</div><div style="display:flex; flex-direction:column; gap:10px; z-index:2;">${l4_data.right.map((item, idx) => `<div id="l4-emo-${idx}" style="background:#ecf0f1; border:4px solid #34495e; border-radius:50%; width:45px; height:45px; display:flex; justify-content:center; align-items:center; font-size:1.8rem; cursor:pointer; transition: box-shadow 0.3s, border-color 0.3s;" onclick="handleL4Click('emo', ${idx}, '${item.word}')">${item.emo}</div>`).join('')}</div></div>`;
+    // 💡 終極排版修復：縮小尺寸，確保字體為純黑色
+    DOM.board.innerHTML = `
+        <div style="font-size: 1.1rem; font-weight:bold; color:#2c3e50; margin-bottom: 2px;">📜 魔法卷軸：記憶連結</div>
+        <div style="font-size: 0.8rem; color: #7f8c8d; margin-bottom: 8px; font-weight:bold;">點擊左側單字，再點右側圖片！</div>
+        <div id="l4-container" style="position: relative; background: #f39c12; padding: 10px; border-radius: 8px; border: 6px solid #d35400; display:flex; justify-content: space-between; width: 340px; margin: 0 auto; box-shadow: inset 0 0 20px rgba(0,0,0,0.3);">
+            <svg id="l4-svg" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; z-index:1;"></svg>
+            <div style="display:flex; flex-direction:column; gap:8px; z-index:2;">
+                ${l4_data.left.map((item, idx) => `<div id="l4-word-${idx}" style="background:#ecf0f1; border:4px solid #34495e; border-radius:4px; padding:4px 8px; font-size:1.1rem; font-weight:bold; color:#000000; cursor:pointer; height:35px; display:flex; align-items:center; justify-content:center; transition:0.2s;" onclick="handleL4Click('word', ${idx}, '${item.word}')">${item.word}</div>`).join('')}
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px; z-index:2;">
+                ${l4_data.right.map((item, idx) => `<div id="l4-emo-${idx}" style="background:#ecf0f1; border:4px solid #34495e; border-radius:50%; width:35px; height:35px; display:flex; justify-content:center; align-items:center; font-size:1.5rem; cursor:pointer; transition: box-shadow 0.3s, border-color 0.3s;" onclick="handleL4Click('emo', ${idx}, '${item.word}')">${item.emo}</div>`).join('')}
+            </div>
+        </div>
+    `;
     drawL4Lines();
 }
 window.handleL4Click = function(type, idx, word) {
@@ -564,7 +580,7 @@ window.handleL4Click = function(type, idx, word) {
     } else if(type === 'emo' && l4_data.selected) {
         if(l4_data.selected.word === word) {
             l4_data.matched.push(word); AudioEngine.correct();
-            document.getElementById(`l4-emo-${idx}`).style.boxShadow = "0 0 15px 4px #f1c40f"; document.getElementById(`l4-emo-${idx}`).style.borderColor = "#f1c40f";
+            document.getElementById(`l4-emo-${idx}`).style.boxShadow = "0 0 10px 3px #f1c40f"; document.getElementById(`l4-emo-${idx}`).style.borderColor = "#f1c40f";
             const wordEl = document.getElementById(`l4-word-${l4_data.selected.idx}`); wordEl.style.borderColor = "#2ecc71"; wordEl.style.backgroundColor = "#2ecc71"; wordEl.style.color = "#ffffff";
             l4_data.selected = null; drawL4Lines(); checkL4Win(); 
         } else { 
@@ -584,9 +600,17 @@ function drawL4Lines() {
         line.setAttribute("stroke", "#c0392b"); line.setAttribute("stroke-width", "4"); line.setAttribute("stroke-linecap", "round"); svg.appendChild(line);
     });
 }
-function checkL4Win() { if(l4_data.matched.length === l4_data.left.length) { state.coins += 30; updateUI(); setTimeout(initPhoneEvent, 1500); } }
 
-// 💡 密碼電話小遊戲
+function checkL4Win() {
+    if(l4_data.matched.length === l4_data.left.length) {
+        state.coins += 30; updateUI();
+        setTimeout(initPhoneEvent, 1500); 
+    }
+}
+
+// =========================================
+// 📞 電話解密
+// =========================================
 let phoneData = { pass: [], input: [], keys: [] };
 function initPhoneEvent() {
     AudioEngine.phone();
@@ -629,6 +653,7 @@ window.startLevel5 = function() {
     let l5Qs = []; let mistakes = [...state.mistakeReviewPool].sort(()=>0.5-Math.random()).slice(0, 3);
     mistakes.forEach(m => l5Qs.push({ ...m, isReview: true }));
     const nouns = [ {e:"cat", emo:"🐱"}, {e:"dog", emo:"🐶"}, {e:"bird", emo:"🐦"} ];
+    
     while(l5Qs.length < 6) {
         let n1 = nouns[Math.floor(Math.random()*nouns.length)], n2 = nouns[Math.floor(Math.random()*nouns.length)];
         let isYes = (Math.random() > 0.5), qText, aText, opts;
